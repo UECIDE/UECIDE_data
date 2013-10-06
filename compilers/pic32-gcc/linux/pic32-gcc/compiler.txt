@@ -1,0 +1,26 @@
+name=pic32-gcc
+version=4.5.1b
+
+cflags=-g::-O2::-w::-ffunction-sections::-fdata-sections::-mno-smart-io::-mdebugger::-Wcast-align::-fno-short-double
+cppflags=-g::-O2::-w::-fno-exceptions::-ffunction-sections::-fdata-sections::-mno-smart-io::-mdebugger::-Wcast-align::-fno-short-double
+ldflags=-Wl,--gc-sections
+
+gcc=${compiler.root}/bin/pic32-gcc
+gpp=${compiler.root}/bin/pic32-g++
+ar=${compiler.root}/bin/pic32-ar
+objcopy=${compiler.root}/bin/pic32-objcopy
+objdump=${compiler.root}/bin/pic32-objdump
+size=${compiler.root}/bin/pic32-size
+binhex=${compiler.root}/bin/pic32-bin2hex
+
+compile.c=${gcc}::-c::${source.name}::-o::${object.name}::-mprocessor=${build.mcu}::${cflags}::${core.flags}::${board.flags}::${includes}
+compile.cpp=${gpp}::-c::${source.name}::-o::${object.name}::-mprocessor=${build.mcu}::${cppflags}::${core.flags}::${board.flags}::${includes}
+compile.S=${gcc}::-c::${source.name}::-o::${object.name}::-mprocessor=${build.mcu}::${cflags}::${core.flags}::${board.flags}::${includes}
+compile.ar=${ar}::rcs::${library}::${object.name}
+compile.eep=${objcopy}::-O::ihex::-j::.eeprom::--set-section-flags=.eeprom=alloc,load::--no-change-warnings::--change-section-lma::.eeprom=0::${build.path}/${filename}.elf::${build.path}/${filename}.eep
+compile.hex=${binhex}::-a::${build.path}/${filename}.elf
+compile.lss=${objdump}::-h::-S::${build.path}/${filename}.elf
+compile.link=${gcc}::${ldflags}::-mprocessor=${build.mcu}::-o::${build.path}/${filename}.elf::${object.filelist}::-L${build.path}::-L${libraries.path}::${libraries}::-lm
+compile.size=${size}::${build.path}/${filename}.elf
+
+compiler.error=^([^:]+):(\\d+):\\d+: error: (.*)

@@ -1,0 +1,12 @@
+build.f_cpu=1000000L
+name=LaunchPad w/ msp430g2231 (1MHz)
+group=Launchpad
+build.mcu=msp430g2231
+upload.protocol=rf2500
+upload.maximum_size=2048
+build.variant=lpmsp430g2231
+platform=msp430
+build.core=msp430
+family=msp430
+version=0.2
+core=Launchpad

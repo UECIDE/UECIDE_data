@@ -1,0 +1,26 @@
+variant=robotControl
+name=Arduino Robot Control
+upload.protocol=avr109
+upload.maximum_size=28672
+board.flags=-DUSBCON::-DUSB_VID=0x2341::-DUSB_PID=0x0038
+upload.speed=57600
+upload.disable_flushing=true
+bootloader.low_fuses=0xff
+bootloader.high_fuses=0xd8
+bootloader.extended_fuses=0xcb
+bootloader.path=caterina-Arduino_Robot
+bootloader.file=Caterina-Robot-Control.hex
+bootloader.unlock_bits=0x3F
+bootloader.lock_bits=0x2F
+build.mcu=atmega32u4
+build.f_cpu=16000000L
+build.vid=0x2341
+build.pid=0x8038
+build.core=robot
+build.variant=robot_control
+group=Arduino
+family=avr
+version=0.5
+upload.using=usbcdc
+upload.reset.baud=1200
+core=robot

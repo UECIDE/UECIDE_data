@@ -1,0 +1,45 @@
+<project name="sdcc" default="build">
+    <target name="build">
+        <antcall target="build-linux"/>
+        <antcall target="build-windows"/>
+        <antcall target="build-macosx"/>
+    </target>
+    
+    <target name="build-linux">
+        <jar basedir="linux" destfile="sdcc-linux.jar">
+            <manifest>
+                <attribute name="Version" value="20130802" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="sdcc" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="i386,amd64" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-windows">
+        <jar basedir="windows" destfile="sdcc-windows.jar">
+            <manifest>
+                <attribute name="Version" value="20130802" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="sdcc" />
+                <attribute name="Platform" value="windows" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-macosx">
+        <jar basedir="macosx" destfile="sdcc-macosx.jar">
+            <manifest>
+                <attribute name="Version" value="20130802" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="sdcc" />
+                <attribute name="Platform" value="macosx" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+</project>
+

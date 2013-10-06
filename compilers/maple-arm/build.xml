@@ -1,0 +1,48 @@
+<project name="maple-arm" default="build">
+    <target name="build">
+        <antcall target="build-linux"/>
+        <antcall target="build-windows"/>
+        <antcall target="build-macosx"/>
+    </target>
+    
+    <target name="build-linux">
+        <property file="linux/maple-arm/compiler.txt" />
+        <jar basedir="linux" destfile="maple-arm-linux.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="LeafLabs" />
+                <attribute name="Compiler" value="maple-arm" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="i386,amd64" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-windows">
+        <property file="windows/maple-arm/compiler.txt" />
+        <jar basedir="windows" destfile="maple-arm-windows.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="LeafLabs" />
+                <attribute name="Compiler" value="maple-arm" />
+                <attribute name="Platform" value="windows" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-macosx">
+        <property file="macosx/maple-arm/compiler.txt" />
+        <jar basedir="macosx" destfile="maple-arm-macosx.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="LeafLabs" />
+                <attribute name="Compiler" value="maple-arm" />
+                <attribute name="Platform" value="macosx" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+</project>
+

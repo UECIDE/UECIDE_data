@@ -1,0 +1,23 @@
+name=lm4f
+description=Arduino compatability API for LM4F Arm boards
+compiler=arm-eabi-gcc
+
+core.path=api
+core.flags=-DF_CPU=${build.f_cpu}::-DARDUINO=${core.version}::-D${board}::-DENERGIA=${core.revision}
+core.header=Arduino.h
+core.version=105
+core.revision=12
+
+family=arm-eabi
+
+library.path=libraries
+examples.path=examples
+
+board=_UNKNOWN_BOARD_
+
+upload.lm4flash.name=lm4flash
+upload.lm4flash.command.linux=sudo::${core.root}/tools/linux/lm4flash::${build.path}/${filename}.bin
+upload.lm4flash.command.macosx=${core.root}/tools/macosx/lm4flash::${build.path}/${filename}.bin
+upload.lm4flash.command.windows=${core.root}/tools/windows/LMFlash::${build.path}/${filename}.bin
+
+sketch.upload=lm4flash

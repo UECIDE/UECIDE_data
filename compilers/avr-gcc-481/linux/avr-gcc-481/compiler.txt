@@ -1,0 +1,25 @@
+name=avr-gcc-481
+version=4.8.1b
+
+cflags=-g::-Os::-w::-ffunction-sections::-fdata-sections
+cppflags=-g::-Os::-w::-fno-exceptions::-ffunction-sections::-fdata-sections
+ldflags=-Os::-Wl,--gc-sections
+
+gcc=${compiler.root}/bin/avr-gcc
+gpp=${compiler.root}/bin/avr-g++
+ar=${compiler.root}/bin/avr-ar
+objcopy=${compiler.root}/bin/avr-objcopy
+objdump=${compiler.root}/bin/avr-objdump
+size=${compiler.root}/bin/avr-size
+
+compile.c=${gcc}::-c::${source.name}::-o::${object.name}::-mmcu=${build.mcu}::${cflags}::${core.flags}::${board.flags}::${includes}
+compile.cpp=${gpp}::-c::${source.name}::-o::${object.name}::-mmcu=${build.mcu}::${cppflags}::${core.flags}::${board.flags}::${includes}
+compile.S=${gcc}::-c::${source.name}::-o::${object.name}::-mmcu=${build.mcu}::${cflags}::${core.flags}::${board.flags}::${includes}
+compile.ar=${ar}::rcs::${library}::${object.name}
+compile.eep=${objcopy}::-O::ihex::-j::.eeprom::--set-section-flags=.eeprom=alloc,load::--no-change-warnings::--change-section-lma::.eeprom=0::${build.path}/${filename}.elf::${build.path}/${filename}.eep
+compile.hex=${objcopy}::-O::ihex::-R::.eeprom::${build.path}/${filename}.elf::${build.path}/${filename}.hex
+compile.lss=${objdump}::-h::-S::${build.path}/${filename}.elf
+compile.link=${gcc}::${ldflags}::-mmcu=${build.mcu}::-o::${build.path}/${filename}.elf::${object.filelist}::-L${build.path}::-L${libraries.path}::${libraries}::-lm
+compile.size=${size}::${build.path}/${filename}.elf
+compiler.error=^([^:]+):(\\d+): error: (.*)
+

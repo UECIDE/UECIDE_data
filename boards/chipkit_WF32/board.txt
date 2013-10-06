@@ -1,0 +1,17 @@
+variant=chipkit_WF32
+name=chipKIT WF32
+group=chipKIT
+platform=pic32
+board=_BOARD_WF32_
+board.flags=
+ldscript=chipKIT-application-32MX695F512.ld
+upload.protocol=stk500v2
+upload.maximum_size=520192
+upload.speed=115200
+build.mcu=32MX695F512L
+build.f_cpu=80000000L
+build.core=pic32
+build.variant=WF32
+family=pic32
+version=0.3
+core=chipKIT

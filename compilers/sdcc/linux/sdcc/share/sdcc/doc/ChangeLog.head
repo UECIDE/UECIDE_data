@@ -1,0 +1,100 @@
+2013-08-02 Philipp Klaus Krause <pkk AT spth.de>
+
+	* src/stm8/gen.c:
+	  More efficient pcall.
+
+2013-08-02 Philipp Klaus Krause <philipp AT informatik.uni-frankfurt.de>
+
+	* src/SDCClospre.hpp,
+	  src/SDCCopt.c:
+	  Fix handling of isaddr flag in optimizations.
+
+2013-08-02 Philipp Klaus Krause <philipp AT informatik.uni-frankfurt.de>
+
+	* src/SDCCopt.c,
+	  src/SDCCicode.c,
+	  src/stm8/gen.c,
+	  src/z80/gen.c:
+	  Fold offset into ADDRESS_OF, RFE #393.
+
+2013-08-02 Philipp Klaus Krause <philipp AT informatik.uni-frankfurt.de>
+
+	* src/stm8/gen.c:
+	  More efficient zeroing of bytes, more efficient addition of constants, fix handling of a in pointer set.
+	* src/SDCCpeeph.c:
+	  Fix handling of architectures that have absolute jump instructions of different length.
+	* src/stm8/peeph.def:
+	  More jump-to-jump optimizations.
+
+2013-08-02 Erik Petrich <epetrich AT ivorytower.norman.ok.us>
+
+	* support/scripts/sdcc.nsi: install/uninstall stm8 related files
+
+2013-08-01 Philipp Klaus Krause <philipp AT informatik.uni-frankfurt.de>
+
+	* src/stm8/gen.c:
+	  Smaller code for GET_VALUE_AT_ADDRESS and signed casts.
+
+2013-07-30 Philipp Klaus Krause <pkk AT spth.de>
+
+	* src/stm8/gen.c:
+	  More efficient mixed-size addition of on-stack operands, and assignment to parts of x and y.
+	* support/regression/tests/bug-136564.c,
+	  support/regression/tests/bug3521024.c,
+	  support/regression/tests/gcc-torture-execute-980707-1.c:
+	  Disable tests affected by bug #2196, 2198.
+	* support/regression/tests/float_single.c:
+	  Disable failing sinf, cosf tests.
+	* src/stm8/peeph.def:
+	  Tail call optimization.
+
+2013-07-30 Borut Razem <borut.razem AT gmail.com>
+
+	* support/sdbinutils/*: sync with binutils 2.23.2
+
+2013-07-29 Philipp Klaus Krause <pkk AT spth.de>
+
+	* src/stm8/peeph.def,
+	  src/stm8/gen.c:
+	  Enable peepholes for inverse jumps, and labels, fix label reference counting bug #2183.
+
+2013-07-29 Borut Razem <borut.razem AT gmail.com>
+
+	* support/cpp/sdcpp-diagnostic.c, upport/cpp/sdcpp-opts.c: fixed bug
+	  #2194 Missing header file produces error, but still zero exit status
+
+2013-07-27 Leland Morrison <enigmalee AT sourceforge.net>
+
+	* sdas/linksrc/lkrloc3.c:
+	  prevent NULL ptr dereference when generating error message
+	  (fixes bug #2076 core dump from sdldz80
+	   if relative jump exceeds range)
+
+2013-07-26 Philipp Klaus Krause <pkk AT spth.de>
+
+	* src/stm8/peep.c,
+	  src/stm8/peeph.def:
+	  Enable peephole for jp to jra optimization.
+
+2013-07-24 Philipp Klaus Krause <philipp AT informatik.uni-frankfurt.de>
+
+	* support/regression/tests/bug-927659.c,
+	  support/regression/tests/bug1057979.c,
+	  support/regression/tests/bug2084206.c,
+	  support/regression/tests/funptrs.c,
+	  support/regression/tests/gcc-torture-execute-20020219-1.c,
+	  support/regression/tests/gcc-torture-execute-20021118-2.c,
+	  support/regression/tests/gcc-torture-execute-20021120-3.c,
+	  support/regression/tests/gcc-torture-execute-20030626-1.c,
+	  support/regression/tests/gcc-torture-execute-20030626-2.c,
+	  support/regression/tests/gcc-torture-execute-20050104-1.c,
+	  support/regression/tests/gcc-torture-execute-20070201-1.c,
+	  support/regression/tests/gcc-torture-execute-20080529-1.c,
+	  support/regression/tests/gcc-torture-execute-921208-1.c,
+	  support/regression/tests/gcc-torture-execute-930513-1.c,
+	  support/regression/tests/gcc-torture-execute-950612-1.c,
+	  support/regression/tests/gcc-torture-execute-950915-1.c,
+	  support/regression/tests/gcc-torture-execute-960327-1.c,
+	  support/regression/tests/gcc-torture-execute-pr42269-2.c,
+	  support/regression/tests/snprintf.c:
+	  Disabled tests that fail due to linker issue, bug #2196, 2198.

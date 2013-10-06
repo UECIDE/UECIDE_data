@@ -1,0 +1,62 @@
+<project name="avr-sam-gcc" default="build">
+    <target name="build">
+        <antcall target="build-linux"/>
+        <antcall target="build-windows"/>
+        <antcall target="build-macosx"/>
+        <!--antcall target="build-pi"/-->
+    </target>
+    
+    <target name="build-linux">
+        <property file="linux/avr-sam-gcc/compiler.txt" />
+        <jar basedir="linux" destfile="avr-sam-gcc-linux.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="avr-sam-gcc" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="i386,amd64" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-windows">
+        <property file="windows/avr-sam-gcc/compiler.txt" />
+        <jar basedir="windows" destfile="avr-sam-gcc-windows.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="avr-sam-gcc" />
+                <attribute name="Platform" value="windows" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-macosx">
+        <property file="macosx/avr-sam-gcc/compiler.txt" />
+        <jar basedir="macosx" destfile="avr-sam-gcc-macosx.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="avr-sam-gcc" />
+                <attribute name="Platform" value="macosx" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-pi">
+        <property file="pi/avr-sam-gcc/compiler.txt" />
+        <jar basedir="pi" destfile="avr-sam-gcc-pi.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="avr-sam-gcc" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="arm" />
+            </manifest>
+        </jar>
+    </target>
+
+</project>
+

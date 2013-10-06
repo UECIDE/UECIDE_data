@@ -1,0 +1,62 @@
+<project name="pic32-gcc" default="build">
+    <target name="build">
+        <antcall target="build-linux"/>
+        <antcall target="build-windows"/>
+        <antcall target="build-macosx"/>
+        <antcall target="build-pi"/>
+    </target>
+    
+    <target name="build-linux">
+        <property file="linux/pic32-gcc/compiler.txt" />
+        <jar basedir="linux" destfile="pic32-gcc-linux.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="pic32-gcc" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="i386,amd64" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-windows">
+        <property file="windows/pic32-gcc/compiler.txt" />
+        <jar basedir="windows" destfile="pic32-gcc-windows.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="pic32-gcc" />
+                <attribute name="Platform" value="windows" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-macosx">
+        <property file="macosx/pic32-gcc/compiler.txt" />
+        <jar basedir="macosx" destfile="pic32-gcc-macosx.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="pic32-gcc" />
+                <attribute name="Platform" value="macosx" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-pi">
+        <property file="pi/pic32-gcc/compiler.txt" />
+        <jar basedir="pi" destfile="pic32-gcc-pi.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="pic32-gcc" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="arm" />
+            </manifest>
+        </jar>
+    </target>
+
+</project>
+

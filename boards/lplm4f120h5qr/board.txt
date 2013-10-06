@@ -1,0 +1,12 @@
+name=StellarPad w/ lm4f120h5qr (80MHz)
+upload.maximum_size=262144
+build.mcu=cortex-m4
+build.fpu=fpv4-sp-d16
+build.f_cpu=80000000L
+build.core=lm4f
+build.variant=stellarpad
+ldscript=lm4fcpp.ld
+group=Launchpad
+family=arm-eabi
+version=0.3
+core=lm4f

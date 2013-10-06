@@ -1,0 +1,12 @@
+build.f_cpu=16000000L
+name=FraunchPad w/ msp430fr5739
+group=Launchpad
+build.mcu=msp430fr5739
+upload.protocol=rf2500
+upload.maximum_size=15872
+build.variant=lpmsp430fr5739
+platform=msp430
+build.core=msp430
+family=msp430
+version=0.2
+core=Launchpad

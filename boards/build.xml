@@ -1,0 +1,146 @@
+<project name="boards" default="build">
+
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="/usr/share/java/ant-contrib-1.0b5-SNAPSHOT.jar"/>
+        </classpath>
+    </taskdef>
+
+    <target name="build">
+        <antcall target="build-board"><param name="dir" value="arduino_due_x"/></antcall>
+        <antcall target="build-board"><param name="dir" value="arduino_due_x_dbg"/></antcall>
+        <antcall target="build-board"><param name="dir" value="atmega168"/></antcall>
+        <antcall target="build-board"><param name="dir" value="atmega328"/></antcall>
+        <antcall target="build-board"><param name="dir" value="atmega8"/></antcall>
+        <antcall target="build-board"><param name="dir" value="bare_695"/></antcall>
+        <antcall target="build-board"><param name="dir" value="bt"/></antcall>
+        <antcall target="build-board"><param name="dir" value="bt328"/></antcall>
+        <antcall target="build-board"><param name="dir" value="cerebot32mx4"/></antcall>
+        <antcall target="build-board"><param name="dir" value="cerebot32mx7"/></antcall>
+        <antcall target="build-board"><param name="dir" value="cerebot_mx3ck"/></antcall>
+        <antcall target="build-board"><param name="dir" value="cerebot_mx3ck_512"/></antcall>
+        <antcall target="build-board"><param name="dir" value="cerebot_mx4ck"/></antcall>
+        <antcall target="build-board"><param name="dir" value="cerebot_mx7ck"/></antcall>
+        <antcall target="build-board"><param name="dir" value="chipkit_DP32"/></antcall>
+        <antcall target="build-board"><param name="dir" value="chipkit_Pi"/></antcall>
+        <antcall target="build-board"><param name="dir" value="chipkit_uc32"/></antcall>
+        <antcall target="build-board"><param name="dir" value="chipkit_WF32"/></antcall>
+        <antcall target="build-board"><param name="dir" value="cmod"/></antcall>
+        <antcall target="build-board"><param name="dir" value="cui32"/></antcall>
+        <antcall target="build-board"><param name="dir" value="CUI32stem"/></antcall>
+        <antcall target="build-board"><param name="dir" value="diecimila"/></antcall>
+        <antcall target="build-board"><param name="dir" value="esplora"/></antcall>
+        <antcall target="build-board"><param name="dir" value="ethernet"/></antcall>
+        <antcall target="build-board"><param name="dir" value="fio"/></antcall>
+        <antcall target="build-board"><param name="dir" value="fubarino_mini"/></antcall>
+        <antcall target="build-board"><param name="dir" value="fubarino_mini_dev"/></antcall>
+        <antcall target="build-board"><param name="dir" value="fubarino_sd"/></antcall>
+        <antcall target="build-board"><param name="dir" value="fubarino_sd_seeed"/></antcall>
+        <antcall target="build-board"><param name="dir" value="leonardo"/></antcall>
+        <antcall target="build-board"><param name="dir" value="lilypad"/></antcall>
+        <antcall target="build-board"><param name="dir" value="lilypad328"/></antcall>
+        <antcall target="build-board"><param name="dir" value="LilyPadUSB"/></antcall>
+        <antcall target="build-board"><param name="dir" value="lpmsp430fr5739"/></antcall>
+        <antcall target="build-board"><param name="dir" value="lpmsp430g2231"/></antcall>
+        <antcall target="build-board"><param name="dir" value="lpmsp430g2452"/></antcall>
+        <antcall target="build-board"><param name="dir" value="lpmsp430g2553"/></antcall>
+        <antcall target="build-board"><param name="dir" value="lplm4f120h5qr"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mc_pic32_ethernet_starterkit"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mc_pic32_explorer16"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mc_pic32_starterkit"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mc_pic32_usb_starterkit"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mega"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mega2560"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mega_pic32"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mega_usb_pic32"/></antcall>
+        <antcall target="build-board"><param name="dir" value="micro"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mikroe_mikromedia"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mikroe_multimedia"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mini"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mini328"/></antcall>
+        <antcall target="build-board"><param name="dir" value="nano"/></antcall>
+        <antcall target="build-board"><param name="dir" value="nano328"/></antcall>
+        <antcall target="build-board"><param name="dir" value="Olimex_Pinguino32"/></antcall>
+        <antcall target="build-board"><param name="dir" value="prfmv2"/></antcall>
+        <antcall target="build-board"><param name="dir" value="prfmv2usb"/></antcall>
+        <antcall target="build-board"><param name="dir" value="prfmv2-575"/></antcall>
+        <antcall target="build-board"><param name="dir" value="prfmv2-575usb"/></antcall>
+        <antcall target="build-board"><param name="dir" value="pro"/></antcall>
+        <antcall target="build-board"><param name="dir" value="pro328"/></antcall>
+        <antcall target="build-board"><param name="dir" value="pro5v328"/></antcall>
+        <antcall target="build-board"><param name="dir" value="pro5v"/></antcall>
+        <antcall target="build-board"><param name="dir" value="quick240_usb_pic32"/></antcall>
+        <antcall target="build-board"><param name="dir" value="robotControl"/></antcall>
+        <antcall target="build-board"><param name="dir" value="robotMotor"/></antcall>
+        <antcall target="build-board"><param name="dir" value="ubw32_mx460"/></antcall>
+        <antcall target="build-board"><param name="dir" value="ubw32_mx795"/></antcall>
+        <antcall target="build-board"><param name="dir" value="uno"/></antcall>
+        <antcall target="build-board"><param name="dir" value="uno_pic32"/></antcall>
+        <antcall target="build-board"><param name="dir" value="usbono_pic32"/></antcall>
+        <antcall target="build-board"><param name="dir" value="velox_one"/></antcall>
+
+        <antcall target="build-board"><param name="dir" value="attiny167"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny2313at1"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny24"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny25at1"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny44at1"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny45at1"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny84"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny84at1"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny84at8"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny85"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny85at128"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny85at16p"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny861at1"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny87at8"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny167at8"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny2313at8"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny24at16"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny25at8"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny44at8"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny45at8"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny84_12"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny84at16"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny84_nr"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny85at1"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny85at16e"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny85at8"/></antcall>
+        <antcall target="build-board"><param name="dir" value="attiny861at18"/></antcall>
+
+        <antcall target="build-board"><param name="dir" value="mighty1284p"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mighty32"/></antcall>
+
+        <antcall target="build-board"><param name="dir" value="maple"/></antcall>
+        <antcall target="build-board"><param name="dir" value="mapleRAM"/></antcall>
+        <antcall target="build-board"><param name="dir" value="maple_mini"/></antcall>
+        <antcall target="build-board"><param name="dir" value="maple_miniRAM"/></antcall>
+        <antcall target="build-board"><param name="dir" value="maple_RET6"/></antcall>
+        <antcall target="build-board"><param name="dir" value="maple_RET6RAM"/></antcall>
+        <antcall target="build-board"><param name="dir" value="maple_native"/></antcall>
+        <antcall target="build-board"><param name="dir" value="maple_nativeRAM"/></antcall>
+    </target>
+    
+    <target name="build-board">
+        <property file="${dir}/board.txt"/>
+        <propertyregex property="prefix"
+                       input="${group}"
+                       defaultValue="${group}"
+                       regexp=" "
+                       replace="_"
+                       global="true"/>
+
+        <jar destfile="${prefix}-${dir}.jar">
+            <zipfileset dir="${dir}" prefix="${group}/${dir}"/>
+            <manifest>
+                <attribute name="Group" value="${group}" />
+                <attribute name="Board" value="${dir}" />
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="${group}" />
+                <attribute name="Platform" value="any" />
+                <attribute name="Description" value="${name}" />
+                <attribute name="Family" value="${family}" />
+            </manifest>
+        </jar>
+    </target>
+
+</project>

@@ -1,0 +1,26 @@
+name=Arduino Due (Programming Port)
+group=Arduino
+upload.tool=bossac
+upload.protocol=sam-ba
+upload.maximum_size=524288
+upload.use_1200bps_touch=true
+upload.wait_for_upload_port=false
+upload.native_usb=true
+build.mcu=cortex-m3
+build.f_cpu=84000000L
+build.core=arduino-sam
+build.variant=arduino_due_x_dbg
+build.variant_system_lib=libsam_sam3x8e_gcc_rel.a
+
+board.vid=0x2341
+board.pid=0x003e
+board=ARDUINO_SAM_DUE
+
+board.flags=-D__SAM3X8E__::-DUSB_PID=${board.pid}::-DUSB_VID=${board.vid}::-DUSBCON
+board.ldflags=-L${board.root}::-lsam_sam3x8e_gcc_rel
+ldscript=linker_scripts/gcc/flash.ld
+version=0.6
+family=arm-eabi
+upload.using=usbcdc
+upload.reset.baud=1200
+core=arduino-sam

@@ -1,0 +1,31 @@
+#Tue, 30 Jul 2013 17:00:40 +0100
+name=Launchpad
+description=Arduino compatability API for Launchpad boards
+compiler=msp430-gcc
+
+core.path=api
+core.flags=-DF_CPU=${build.f_cpu}::-DARDUINO=${core.version}::-D${board}::-DENERGIA=${core.revision}
+core.header=Arduino.h
+core.version=105
+core.revision=11
+
+family=msp430
+
+library.path=libraries
+examples.path=examples
+
+board=_UNKNOWN_BOARD_
+
+upload.mspdebug.name=Program with mspdebug
+upload.mspdebug.command=${compiler.path}/mspdebug::${upload.protocol}::--force-reset::${verbose}::prog ${filename}.hex
+upload.mspdebug.command.linux_i386=${core.root}/tools/linux32/mspdebug::${upload.protocol}::--force-reset::${verbose}::prog ${build.path}/${filename}.hex
+upload.mspdebug.command.linux_amd64=${core.root}/tools/linux64/mspdebug::${upload.protocol}::--force-reset::${verbose}::prog ${build.path}/${filename}.hex
+upload.mspdebug.command.windows=${core.root}/tools/windows/mspdebug::${upload.protocol}::--force-reset::${verbose}::prog ${build.path}/${filename}.hex
+upload.mspdebug.command.macosx=${core.root}/tools/macosx/mspdebug::${upload.protocol}::--force-reset::${verbose}::prog ${build.path}/${filename}.hex
+
+upload.mspdebug.verbose=-v
+upload.mspdebug.quiet=-q::-q
+upload.mspdebug.dtr=yes
+upload.mspdebug.rts=yes
+
+sketch.upload=mspdebug

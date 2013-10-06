@@ -1,0 +1,32 @@
+<project name="avr-gcc" default="build">
+    <target name="build">
+        <antcall target="build-core"> <param name="coredir" value="arduino"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="arduino-sam"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="robot"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="chipKIT"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="Cosa"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="Launchpad"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="lm4f"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="arduino481"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="tiny"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="tinyNoMillis"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="maple"/> </antcall>
+    </target>
+    
+    <target name="build-core">
+        <property file="${coredir}/core.txt"/>
+        <jar destfile="${coredir}.jar">
+            <zipfileset dir="${coredir}" prefix="${coredir}"/>
+            <manifest>
+                <attribute name="Version" value="${core.version}.${core.revision}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="${compiler}" />
+                <attribute name="Core" value="${name}" />
+                <attribute name="Platform" value="any" />
+                <attribute name="Family" value="${family}" />
+                <attribute name="Description" value="${description}" />
+            </manifest>
+        </jar>
+    </target>
+</project>
+

@@ -1,0 +1,31 @@
+<project name="avr-gcc" default="build">
+    <target name="build">
+        <antcall target="build-linux"/>
+        <antcall target="build-pi"/>
+    </target>
+    
+    <target name="build-linux">
+        <jar basedir="linux" destfile="avr-gcc-481-linux.jar">
+            <manifest>
+                <attribute name="Version" value="4.8.1b" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="avr-gcc-481" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="i386,amd64" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-pi">
+        <jar basedir="pi" destfile="avr-gcc-481-pi.jar">
+            <manifest>
+                <attribute name="Version" value="4.8.1a" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="avr-gcc-481" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="arm" />
+            </manifest>
+        </jar>
+    </target>
+</project>
+

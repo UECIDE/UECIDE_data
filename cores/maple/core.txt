@@ -1,0 +1,31 @@
+name=maple
+description=Arduino compatability API for Maple Arm boards
+compiler=maple-arm
+
+core.path=api
+
+core.header=WProgram.h
+core.version=18
+core.revision=1
+
+core.flags=-DBOARD_${build.board}::-DMCU_${build.flavour}::-D${build.density}::-DERROR_LED_PORT=${build.error_led_port}::-DERROR_LED_PIN=${build.error_led_pin}::-D${build.vector}::-DMAPLE_IDE::-DARDUINO=${core.version}::
+
+library.path=libraries
+examples.path=examples
+
+board=_UNKNOWN_BOARD_
+
+upload.dfu.name=DFU Capable Board
+upload.dfu.command.linux=${core.root}/tools/linux/dfu-util::-D::${build.path}/${filename}.bin::-a::${upload.altID}::-d::${upload.usbID}
+upload.dfu.command.macosx=${core.root}/tools/macosx/dfu-util::-D::${build.path}/${filename}.bin::-a::${upload.altID}::-d::${upload.usbID}
+upload.dfu.command.windows=${core.root}/tools/windows/dfu-util::-D::${build.path}/${filename}.bin::-a::${upload.altID}::-d::${upload.usbID}
+
+upload.dfu.using=serial
+upload.dfu.dtr=yes
+upload.dfu.rts=yes
+
+sketch.upload=dfu
+
+version=0.0.1
+family=maple
+

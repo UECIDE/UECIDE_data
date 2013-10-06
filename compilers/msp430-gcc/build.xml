@@ -1,0 +1,63 @@
+<project name="msp430-gcc" default="build">
+    <target name="build">
+        <antcall target="build-linux"/>
+        <antcall target="build-pi"/>
+        <antcall target="build-windows"/>
+        <antcall target="build-macosx"/>
+    </target>
+    
+    <target name="build-linux">
+        <property file="linux/msp430-gcc/compiler.txt" />
+        <jar basedir="linux" destfile="msp430-gcc-linux.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Energia" />
+                <attribute name="Compiler" value="msp430-gcc" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="i386,amd64" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-pi">
+        <property file="pi/msp430-gcc/compiler.txt" />
+        <jar basedir="pi" destfile="msp430-gcc-pi.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Energia" />
+                <attribute name="Compiler" value="msp430-gcc" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="arm" />
+                <attribute name="Description" value="MSP430 compiler for the Pi.  Note that this is a stub packages and requires the gcc-msp430 packages to be installed in the system." />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-windows">
+        <property file="windows/msp430-gcc/compiler.txt" />
+        <jar basedir="windows" destfile="msp430-gcc-windows.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Energia" />
+                <attribute name="Compiler" value="msp430-gcc" />
+                <attribute name="Platform" value="windows" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-macosx">
+        <property file="macosx/msp430-gcc/compiler.txt" />
+        <jar basedir="macosx" destfile="msp430-gcc-macosx.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Energia" />
+                <attribute name="Compiler" value="msp430-gcc" />
+                <attribute name="Platform" value="macosx" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+</project>
+

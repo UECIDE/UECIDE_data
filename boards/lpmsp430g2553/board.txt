@@ -1,0 +1,12 @@
+build.f_cpu=16000000L
+name=LaunchPad w/ msp430g2553 (16MHz)
+group=Launchpad
+build.mcu=msp430g2553
+upload.protocol=rf2500
+upload.maximum_size=16384
+build.variant=lpmsp430g2553
+platform=msp430
+build.core=msp430
+family=msp430
+version=0.2
+core=Launchpad
