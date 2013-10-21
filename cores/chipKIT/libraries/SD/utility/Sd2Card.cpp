@@ -46,61 +46,32 @@ uint32_t	spi_state;
 uint8_t     fspi_state_saved = false;
 uint32_t    interrupt_state = 0;
 
+extern "C" {
+    extern uint8_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder);
+    extern void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, byte data);
+}
+
+
 /** Soft SPI receive */
-uint8_t spiRec(void) {
-  uint8_t data = 0;
-  // output pin high - like sending 0XFF
-  PORTSetBits(prtSDO, bnSDO);
-
-  for (uint8_t i = 0; i < 8; i++) {
-	PORTSetBits(prtSCK, bnSCK);
-
-    data <<= 1;
-
-	// adjust so SCK is nice
-    asm("nop");
-    asm("nop");
-
-    if (PORTReadBits(prtSDI,bnSDI)) data |= 1;
-
-
-    PORTClearBits(prtSCK, bnSCK);
-  }
-
-  return data;
+uint8_t Sd2Card::spiRec(void) {
+    uint8_t data = 0;
+    if (_spi) {
+        data = _spi->transfer(0xFF);
+    } else {
+        // output pin high - like sending 0XFF
+        digitalWrite(_mosi, HIGH);
+        data = shiftIn(_miso, _clk, MSBFIRST);
+    }
+    return data;
 }
 //------------------------------------------------------------------------------
 /** Soft SPI send */
-void spiSend(uint8_t data) {
-
-  for (uint8_t i = 0; i < 8; i++) {
-    
-	if(data & 0X80) {
-		PORTSetBits(prtSDO, bnSDO);
-	}
-	else
-	{
-		PORTClearBits(prtSDO, bnSDO);
-	}
-
-	PORTClearBits(prtSCK, bnSCK);
-
-    asm("nop");
-	asm("nop");
-	asm("nop");
-
-    data <<= 1;
-
-	PORTSetBits(prtSCK, bnSCK);
-
-  }
-  // hold SCK high for a few ns
-   asm("nop");
-   asm("nop");
-   asm("nop");
-   asm("nop");
-
-  PORTClearBits(prtSCK, bnSCK);
+void Sd2Card::spiSend(uint8_t data) {
+    if (_spi) {
+        _spi->transfer(data);
+    } else {
+        shiftOut(_mosi, _clk, MSBFIRST, data);
+    }
 }
 //------------------------------------------------------------------------------
 // send command and return error code.  Return zero for OK
@@ -159,27 +130,11 @@ uint32_t Sd2Card::cardSize(void) {
 
 //------------------------------------------------------------------------------
 void Sd2Card::chipSelectHigh(void) {
-  digitalWrite(chipSelectPin_, HIGH);
-#if defined(_BOARD_MEGA_) || defined(_BOARD_UNO_) || defined(_BOARD_UC32_)
-  if(fspi_state_saved)
-  {
-    SPI2CON = spi_state;
-    fspi_state_saved = false;
-    restoreIntEnable(_EXTERNAL_1_IRQ, interrupt_state);
-  }
-#endif
+  digitalWrite(_cs, HIGH);
 }
 //------------------------------------------------------------------------------
 void Sd2Card::chipSelectLow(void) {
-#if defined(_BOARD_MEGA_) || defined(_BOARD_UNO_) || defined(_BOARD_UC32_)
-    if(!fspi_state_saved)
-    {
-        interrupt_state = clearIntEnable(_EXTERNAL_1_IRQ);
-        spi_state = SPI2CON;
-        SPI2CONbits.ON = 0; 
-        fspi_state_saved = true;
-    }
-#endif
+    digitalWrite(_cs, LOW);
   digitalWrite(chipSelectPin_, LOW);
 }
 //------------------------------------------------------------------------------
@@ -244,84 +199,84 @@ uint8_t Sd2Card::eraseSingleBlockEnable(void) {
  * can be determined by calling errorCode() and errorData().
  */
 uint8_t Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
-  errorCode_ = inBlock_ = partialBlockRead_ = type_ = 0;
+    _cs = chipSelectPin;
 
-  // 16-bit init start time allows over a minute
-  uint16_t t0 = (uint16_t)millis();
-  uint32_t arg;
-
-  SPI2CON = 0;
-
-  DDPCONbits.JTAGEN = 0;
-
-  AD1PCFG = 0xFFFF;
-
-  chipSelectPin_ = chipSelectPin;
-
-  pinMode(chipSelectPin_, OUTPUT);
-
-  PORTSetPinsDigitalOut(prtSCK, bnSCK);
-  PORTSetPinsDigitalOut(prtSDO, bnSDO);
-  PORTSetPinsDigitalIn(prtSDI, bnSDI);
-  
-  // set pin modes
-  chipSelectHigh();
-
-  // must supply min of 74 clock cycles with CS high.
-  for (uint8_t i = 0; i < 10; i++) spiSend(0XFF);
-
-  chipSelectLow();
-
-  // command to go idle in SPI mode
-  while ((status_ = cardCommand(CMD0, 0)) != R1_IDLE_STATE) {
-    if (((uint16_t)millis() - t0) > SD_INIT_TIMEOUT) {
-      error(SD_CARD_ERROR_CMD0);
-      goto fail;
+    if (_spi) {
+        _spi->begin();
+	_spi->setSpeed(125000UL);
+    } else {
+        pinMode(_mosi, OUTPUT);
+        pinMode(_miso, INPUT);
+        pinMode(_clk, OUTPUT);
     }
-  }
-  // check SD version
-  if ((cardCommand(CMD8, 0x1AA) & R1_ILLEGAL_COMMAND)) {
-    type(SD_CARD_TYPE_SD1);
-  } else {
-    // only need last byte of r7 response
-    for (uint8_t i = 0; i < 4; i++) status_ = spiRec();
-    if (status_ != 0XAA) {
-      error(SD_CARD_ERROR_CMD8);
-      goto fail;
-    }
-    type(SD_CARD_TYPE_SD2);
-  }
-  // initialize card and send host supports SDHC if SD2
-  arg = type() == SD_CARD_TYPE_SD2 ? 0X40000000 : 0;
+    
+    pinMode(_cs, OUTPUT);
+    digitalWrite(_cs, HIGH);
 
-  while ((status_ = cardAcmd(ACMD41, arg)) != R1_READY_STATE) {
-    // check for timeout
-    if (((uint16_t)millis() - t0) > SD_INIT_TIMEOUT) {
-      error(SD_CARD_ERROR_ACMD41);
-      goto fail;
-    }
-  }
-  // if SD2 read OCR register to check for SDHC card
-  if (type() == SD_CARD_TYPE_SD2) {
-    if (cardCommand(CMD58, 0)) {
-      error(SD_CARD_ERROR_CMD58);
-      goto fail;
-    }
-    if ((spiRec() & 0XC0) == 0XC0) type(SD_CARD_TYPE_SDHC);
-    // discard rest of ocr - contains allowed voltage range
-    for (uint8_t i = 0; i < 3; i++) spiRec();
-  }
-  chipSelectHigh();
+    errorCode_ = inBlock_ = partialBlockRead_ = type_ = 0;
 
-#ifndef SOFTWARE_SPI
-  return setSckRate(sckRateID);
-#else  // SOFTWARE_SPI
-  return true;
-#endif  // SOFTWARE_SPI
+    // 16-bit init start time allows over a minute
+    uint16_t t0 = (uint16_t)millis();
+    uint32_t arg;
 
- fail:
-  chipSelectHigh();
-  return false;
+    chipSelectHigh();
+
+    // must supply min of 74 clock cycles with CS high.
+    for (uint8_t i = 0; i < 10; i++) spiSend(0XFF);
+
+    chipSelectLow();
+
+    // command to go idle in SPI mode
+    while ((status_ = cardCommand(CMD0, 0)) != R1_IDLE_STATE) {
+        if (((uint16_t)millis() - t0) > SD_INIT_TIMEOUT) {
+            error(SD_CARD_ERROR_CMD0);
+            goto fail;
+        }
+    }
+    // check SD version
+    if ((cardCommand(CMD8, 0x1AA) & R1_ILLEGAL_COMMAND)) {
+        type(SD_CARD_TYPE_SD1);
+    } else {
+        // only need last byte of r7 response
+        for (uint8_t i = 0; i < 4; i++) status_ = spiRec();
+        if (status_ != 0XAA) {
+            error(SD_CARD_ERROR_CMD8);
+            goto fail;
+        }
+        type(SD_CARD_TYPE_SD2);
+    }
+    // initialize card and send host supports SDHC if SD2
+    arg = type() == SD_CARD_TYPE_SD2 ? 0X40000000 : 0;
+
+    while ((status_ = cardAcmd(ACMD41, arg)) != R1_READY_STATE) {
+        // check for timeout
+        if (((uint16_t)millis() - t0) > SD_INIT_TIMEOUT) {
+            error(SD_CARD_ERROR_ACMD41);
+            goto fail;
+        }
+    }
+    // if SD2 read OCR register to check for SDHC card
+    if (type() == SD_CARD_TYPE_SD2) {
+        if (cardCommand(CMD58, 0)) {
+            error(SD_CARD_ERROR_CMD58);
+            goto fail;
+        }
+        if ((spiRec() & 0XC0) == 0XC0) type(SD_CARD_TYPE_SDHC);
+        // discard rest of ocr - contains allowed voltage range
+        for (uint8_t i = 0; i < 3; i++) spiRec();
+    }
+    chipSelectHigh();
+
+    if (_spi) {
+	_spi->setSpeed(10000000UL);
+    } else {
+   	 setSckRate(sckRateID);
+    }
+    return true;
+
+fail:
+    chipSelectHigh();
+    return false;
 }
 //------------------------------------------------------------------------------
 /**

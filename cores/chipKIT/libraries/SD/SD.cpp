@@ -340,8 +340,8 @@ boolean SDClass::begin(uint8_t csPin) {
     Return true if initialization succeeds, false otherwise.
 
    */
-  return card.init(SPI_HALF_SPEED, csPin) &&
-         volume.init(card) &&
+  return card->init(SPI_HALF_SPEED, csPin) &&
+         volume.init(*card) &&
          root.openRoot(volume);
 }
 
@@ -445,12 +445,14 @@ File SDClass::open(const char *filepath, uint8_t mode) {
   SdFile file;
 
   // failed to open a subdir!
-  if (!parentdir.isOpen())
+  if (!parentdir.isOpen()) {
     return File();
+  }
+  
 
   // there is a special case for the Root directory since its a static dir
   if (parentdir.isRoot()) {
-    if ( ! file.open(SD.root, filepath, mode)) {
+    if ( ! file.open(root, filepath, mode)) {
       // failed to open the file :(
       return File();
     }
@@ -613,4 +615,6 @@ void File::rewindDirectory(void) {
     _file->rewind();
 }
 
-SDClass SD;
+Sd2Card defaultSDCard;
+SDClass SD(defaultSDCard);
+

@@ -19,6 +19,7 @@
  */
 #include <SdFat.h>
 #include <WProgram.h>
+extern uint8_t errno;
 
 //------------------------------------------------------------------------------
 // callback function for date/time
@@ -382,11 +383,14 @@ uint8_t SdFile::makeDir(SdFile* dir, const char* dirName) {
  * or can't be opened in the access mode specified by oflag.
  */
 uint8_t SdFile::open(SdFile* dirFile, const char* fileName, uint8_t oflag) {
-  uint8_t dname[11];
-  dir_t* p;
+    uint8_t dname[11];
+    dir_t* p;
 
-  // error if already open
-  if (isOpen())return false;
+    // error if already open
+    if (isOpen()) {
+        errno = 16;
+        return false;
+    }
 
   if (!make83Name(fileName, dname)) return false;
   vol_ = dirFile->vol_;
@@ -399,7 +403,10 @@ uint8_t SdFile::open(SdFile* dirFile, const char* fileName, uint8_t oflag) {
   while (dirFile->curPosition_ < dirFile->fileSize_) {
     uint8_t index = 0XF & (dirFile->curPosition_ >> 5);
     p = dirFile->readDirCache();
-    if (p == NULL) return false;
+    if (p == NULL) {
+      errno = 5;
+      return false;
+    }
 
     if (p->name[0] == DIR_NAME_FREE || p->name[0] == DIR_NAME_DELETED) {
       // remember first empty slot
@@ -412,24 +419,39 @@ uint8_t SdFile::open(SdFile* dirFile, const char* fileName, uint8_t oflag) {
       if (p->name[0] == DIR_NAME_FREE) break;
     } else if (!memcmp(dname, p->name, 11)) {
       // don't open existing file if O_CREAT and O_EXCL
-      if ((oflag & (O_CREAT | O_EXCL)) == (O_CREAT | O_EXCL)) return false;
+      if ((oflag & (O_CREAT | O_EXCL)) == (O_CREAT | O_EXCL)) {
+	errno = 17;
+	return false;
+      }
 
       // open found file
       return openCachedEntry(0XF & index, oflag);
     }
   }
   // only create file if O_CREAT and O_WRITE
-  if ((oflag & (O_CREAT | O_WRITE)) != (O_CREAT | O_WRITE)) return false;
+  if ((oflag & (O_CREAT | O_WRITE)) != (O_CREAT | O_WRITE)) {
+	errno = 2;
+	return false;
+  }
 
   // cache found slot or add cluster if end of file
   if (emptyFound) {
     p = cacheDirEntry(SdVolume::CACHE_FOR_WRITE);
-    if (!p) return false;
+    if (!p) {
+	errno = 12;
+	return false;
+    }
   } else {
-    if (dirFile->type_ == FAT_FILE_TYPE_ROOT16) return false;
+    if (dirFile->type_ == FAT_FILE_TYPE_ROOT16) {
+	errno = 14;
+	return false;
+    }
 
     // add and zero cluster for dirFile - first cluster is in cache for write
-    if (!dirFile->addDirCluster()) return false;
+    if (!dirFile->addDirCluster()) {
+	errno = 28;
+	return false;
+    }
 
     // use first entry in cluster
     dirIndex_ = 0;
@@ -453,9 +475,13 @@ uint8_t SdFile::open(SdFile* dirFile, const char* fileName, uint8_t oflag) {
   p->lastWriteTime = p->creationTime;
 
   // force write of entry to SD
-  if (!SdVolume::cacheFlush()) return false;
+  if (!SdVolume::cacheFlush()) {
+	errno = 5;
+	return false;
+  }
 
   // open entry in cache
+  errno = 0;
   return openCachedEntry(dirIndex_, oflag);
 }
 //------------------------------------------------------------------------------
