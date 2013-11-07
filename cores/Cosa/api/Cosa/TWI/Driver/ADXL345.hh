@@ -27,7 +27,6 @@
 #define __COSA_TWI_DRIVER_ADXL345_HH__
 
 #include "Cosa/TWI.hh"
-#include "Cosa/Pins.hh"
 #include "Cosa/IOStream.hh"
 
 /**
@@ -65,6 +64,9 @@ protected:
     FIFO_CTL = 0x38,		// FIFO control
     FIFO_STATUS = 0x39		// FIFO status
   } __attribute__((packed));
+
+  /** Register DEVID value (345) */
+  static const uint8_t ID = 0xe5;
 
   /**
    * Register ACT_INACT_CTL bitfields
@@ -226,9 +228,13 @@ protected:
 
 public:
   /**
-   * Construct ADXL345 driver with alternate I2C address (pp. 18)
+   * Construct ADXL345 driver with normal or alternative address
+   * (pp. 18).  
+   * @param[in] use_alt_address.
    */
-  ADXL345() : TWI::Driver(0x53) {}
+  ADXL345(bool use_alt_address = false) : 
+    TWI::Driver(use_alt_address ? 0x53 : 0x1d) 
+  {}
 
   /**
    * Start interaction with device. Set full resolution and 16G.
@@ -293,6 +299,12 @@ public:
   }
 };
 
-extern IOStream& operator<<(IOStream& outs, ADXL345& adxl);
+/**
+ * Print the latest reading to the given output stream.
+ * @param[in] outs output stream.
+ * @param[in] accelerometer instance.
+ * @return output stream.
+ */
+extern IOStream& operator<<(IOStream& outs, ADXL345& accelerometer);
 
 #endif

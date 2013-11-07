@@ -13,6 +13,7 @@
         <antcall target="build-board"><param name="dir" value="atmega328"/></antcall>
         <antcall target="build-board"><param name="dir" value="atmega8"/></antcall>
         <antcall target="build-board"><param name="dir" value="bare_695"/></antcall>
+        <antcall target="build-board"><param name="dir" value="oc_695"/></antcall>
         <antcall target="build-board"><param name="dir" value="bt"/></antcall>
         <antcall target="build-board"><param name="dir" value="bt328"/></antcall>
         <antcall target="build-board"><param name="dir" value="cerebot32mx4"/></antcall>

@@ -28,6 +28,9 @@
 bool 
 ADXL345::begin()
 {
+  // Read device register and santity check
+  uint8_t id = read(DEVID);
+  if (id != ID) return (false);
   write(DATA_FORMAT, _BV(FULL_RES) | RANGE_16G);
   write(POWER_CTL, _BV(MEASURE) | _BV(SLEEP) | WAKEUP_8_HZ);
   return (true);
@@ -76,14 +79,14 @@ ADXL345::calibrate()
 
 
 IOStream& 
-operator<<(IOStream& outs, ADXL345& adxl)
+operator<<(IOStream& outs, ADXL345& accelerometer)
 {
   ADXL345::sample_t value;
-  adxl.sample(value);
+  accelerometer.sample(value);
   outs << PSTR("ADXL345(x = ") << value.x
        << PSTR(", y = ") << value.y
        << PSTR(", z = ") << value.z
-       << PSTR(")");
+       << PSTR(")") << endl;
   return (outs);
 }
 

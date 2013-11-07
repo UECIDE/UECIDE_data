@@ -1,12 +1,12 @@
-name=ATTiny Core (No Millis)
-description=A Beta ATTiny Core which doesn't use any timers (no millis())
+name=tinyNoMillis
+description=ATTiny Core (No Millis)
 compiler=avr-gcc
 
 core.path=api
 core.flags=-DF_CPU=${build.f_cpu}::-DARDUINO=${core.version}::-D${board}
 core.header=Arduino.h
 core.version=100
-core.revision=1000
+core.revision=1002
 
 family=avrtiny
 

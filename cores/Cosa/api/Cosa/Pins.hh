@@ -489,6 +489,21 @@ public:
 
   /**
    * Set the output pin with the given value. Zero(0) to clear
+   * and non-zero to set. Unprotected version.
+   * @param[in] value to set.
+   */
+  void _write(bool value) 
+  { 
+    if (value) {
+      *PORT() |= m_mask; 
+    }
+    else {
+      *PORT() &= ~m_mask; 
+    }
+  }
+
+  /**
+   * Set the output pin with the given value. Zero(0) to clear
    * and non-zero to set.
    * @param[in] value to write.
    */
@@ -775,7 +790,7 @@ protected:
   bool sample_request(uint8_t pin, uint8_t ref);
 
   /**
-   * @override
+   * @override Event::Handler
    * Handle analog pin periodic sampling and sample completed event.
    * Will call virtual method on_change() if the pin value has changed since
    * latest sample.
@@ -841,6 +856,22 @@ public:
   static uint16_t bandgap(uint16_t vref = 1100);
 
   /**
+   * Enable analog conversion.
+   */
+  static void powerup()
+  {
+    bit_set(ADCSRA, ADEN);
+  }
+
+  /**
+   * Disable analog conversion.
+   */
+  static void powerdown()
+  {
+    bit_clear(ADCSRA, ADEN);
+  }
+
+  /**
    * Sample analog pin. Wait for conversion to complete before 
    * returning with sample value.
    * @return sample value.
@@ -881,14 +912,14 @@ public:
   uint16_t sample_await();
 
   /**
-   * @override
+   * @override Interrupt::Handler
    * Interrupt service on conversion completion.
    * @param[in] arg sample value.
    */
   virtual void on_interrupt(uint16_t arg);
 
   /**
-   * @override
+   * @override AnalogPin
    * Default on change function. 
    * @param[in] value.
    */
@@ -950,14 +981,14 @@ public:
   bool samples_request();
 
   /**
-   * @override
+   * @override Interrupt::Handler
    * Interrupt service on conversion completion.
    * @param[in] arg sample value.
    */
   virtual void on_interrupt(uint16_t arg);
 
   /**
-   * @override
+   * @override Event::Handler
    * Default analog pin set event handler function. 
    * @param[in] type the type of event.
    * @param[in] value the event value.
@@ -970,10 +1001,7 @@ public:
  * and negative pin AIN1 or ADCn. Note: only one instance can be
  * active/enabled at a time.
  */
-class AnalogComparator : 
-  public Interrupt::Handler, 
-  public Event::Handler 
-{
+class AnalogComparator : public Interrupt::Handler, public Event::Handler {
   friend void ANALOG_COMP_vect(void);
 public:
   enum Mode {
@@ -1012,9 +1040,10 @@ public:
   }
 
   /**
+   * @override Interrupt::Handler
    * Enable analog comparator handler.
    */
-  void enable()
+  virtual void enable()
   {
     synchronized {
       comparator = this;
@@ -1024,18 +1053,19 @@ public:
   }
 
   /**
+   * @override Interrupt::Handler
    * Disable analog comparator handler.
    */
-  void disable()
+  virtual void disable()
   {
     synchronized {
-      bit_clear(ACSR, ACIE);
+      ACSR = _BV(ACD);
       comparator = 0;
     }
   }
 
   /**
-   * @override
+   * @override Interrupt::Handler
    * Default interrupt service on comparator output rise, fall or toggle.
    * @param[in] arg argument from interrupt service routine.
    */
@@ -1043,7 +1073,7 @@ public:
 };
 
 /**
- * Synatatic sugar for an asserted block. The given in will be toggled.
+ * Synatatic sugar for an asserted block. The given pin will be toggled.
  * Initiating the pin to zero(0) will give active low logic.
  * @param[in] pin to assert.
  */

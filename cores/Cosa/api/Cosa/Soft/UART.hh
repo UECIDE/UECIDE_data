@@ -64,9 +64,9 @@ namespace Soft {
 
     /**
      * Construct Soft UART with transmitter on given output pin.
-     * @param[in] pin transmitter (default D0).
+     * @param[in] pin transmitter (default D1).
      */
-    UART(Board::DigitalPin pin = Board::D0) :
+    UART(Board::DigitalPin pin = Board::D1) :
       IOStream::Device(),
       m_pin(pin),
       m_stops(2),
@@ -77,7 +77,7 @@ namespace Soft {
     }
 
     /**
-     * @override
+     * @override IOStream::Device
      * Write character to serial 
      * Returns character if successful otherwise on error or buffer full
      * returns EOF(-1),

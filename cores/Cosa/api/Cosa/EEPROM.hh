@@ -45,6 +45,7 @@ public:
   class Device {
   public:
     /**
+     * @override EEPROM::Device
      * Return true(1) if the device is ready, write cycle is completed,
      * otherwise false(0).
      * @return bool
@@ -52,6 +53,7 @@ public:
     virtual bool is_ready();
 
     /**
+     * @override EEPROM::Device
      * Read rom block with the given size into the buffer from the address.
      * Return number of bytes read or negative error code.
      * @param[in] dest buffer to read from rom into.
@@ -62,6 +64,7 @@ public:
     virtual int read(void* dest, const void* src, size_t size);
 
     /**
+     * @override EEPROM::Device
      * Write rom block at given address with the contents from the buffer.
      * Return number of bytes written or negative error code.
      * @param[in] dest address in rom to write to.
@@ -110,7 +113,7 @@ public:
   /**
    * Read rom block with the given size into the buffer from the address.
    * Return number of bytes read or negative error code.
-   * @param[in] dest buffer to read from rom.
+   * @param[out] dest buffer to write to.
    * @param[in] src address in rom to read from.
    * @param[in] size number of bytes to read.
    * @return number of bytes or negative error code.
@@ -118,6 +121,19 @@ public:
   int read(void* dest, void* src, size_t size) 
   { 
     return (m_dev->read(dest, src, size)); 
+  }
+
+  /**
+   * Template function to read a rom block with the given type to
+   * given value reference. Returns true(1) if successful otherwise
+   * false(0). 
+   * @param[out] dest address variable.
+   * @param[in] src address in rom to read from.
+   * @return boolean.
+   */
+  template<class T> bool read(T* dest, const T* src)
+  {
+    return (m_dev->read(dest, src, sizeof(T)) == sizeof(T));
   }
 
   int read(unsigned char* dest, unsigned char* src) 
@@ -168,7 +184,7 @@ public:
   /**
    * Write rom block at given address with the contents from the buffer.
    * Return number of bytes written or negative error code.
-   * @param[in] dest address in rom to read write to.
+   * @param[out] dest address in rom to read write to.
    * @param[in] src buffer to write to rom.
    * @param[in] size number of bytes to write.
    * @return number of bytes or negative error code.
@@ -176,6 +192,19 @@ public:
   int write(void* dest, void* src, size_t size) 
   { 
     return (m_dev->write(dest, src, size)); 
+  }
+
+  /**
+   * Write rom block at given address with the given value of given
+   * data type. Returns true(1) if successful otherwise false(0).
+   * @param[in] dest address in rom to read write to.
+   * @param[in] src buffer to write to rom.
+   * @param[in] size number of bytes to write.
+   * @return boolean.
+   */
+  template<class T> int write(T* dest, const T* src)
+  {
+    return (m_dev->write(dest, src, sizeof(T)) == sizeof(T));
   }
 
   int write(unsigned char* dest, unsigned char src) 

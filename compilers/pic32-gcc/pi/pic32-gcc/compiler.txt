@@ -1,5 +1,5 @@
 name=pic32-gcc
-version=4.5.1b
+version=4.5.1c
 
 cflags=-g::-O2::-w::-ffunction-sections::-fdata-sections::-mno-smart-io::-mdebugger::-Wcast-align::-fno-short-double
 cppflags=-g::-O2::-w::-fno-exceptions::-ffunction-sections::-fdata-sections::-mno-smart-io::-mdebugger::-Wcast-align::-fno-short-double
@@ -20,7 +20,7 @@ compile.ar=${ar}::rcs::${library}::${object.name}
 compile.eep=${objcopy}::-O::ihex::-j::.eeprom::--set-section-flags=.eeprom=alloc,load::--no-change-warnings::--change-section-lma::.eeprom=0::${build.path}/${filename}.elf::${build.path}/${filename}.eep
 compile.hex=${binhex}::-a::${build.path}/${filename}.elf
 compile.lss=${objdump}::-h::-S::${build.path}/${filename}.elf
-compile.link=${gcc}::${ldflags}::-mprocessor=${build.mcu}::-o::${build.path}/${filename}.elf::${object.filelist}::-L${build.path}::-L${libraries.path}::${libraries}::-lm
+compile.link=${gcc}::${ldflags}::-mprocessor=${build.mcu}::-o::${build.path}/${filename}.elf::${object.filelist}::-L${build.path}::-L${libraries.path}::-Wl,--start-group::${libraries}::-Wl,--end-group::-lm
 compile.size=${size}::${build.path}/${filename}.elf
 
 compiler.error=^([^:]+):(\\d+):\\d+: error: (.*)

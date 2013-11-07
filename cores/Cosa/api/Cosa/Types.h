@@ -42,6 +42,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "Cosa/Errno.h"
 #include "Cosa/Board.hh"
 
 /**
@@ -134,7 +135,7 @@ union univ32_t {
 /**
  * Workaround for gcc program memory data warning.
  */
-#define __PROGMEM  __attribute__((section(".progmem.cosa")))
+#define __PROGMEM  __attribute__((section(".progmem.data")))
 
 #undef PSTR
 /**
@@ -151,6 +152,9 @@ union univ32_t {
     &__c[0];								\
   }									\
   ))
+
+/** String in program memory */
+typedef const PROGMEM char* str_P;
 
 /** Pointer table in program memory */
 typedef const PROGMEM void* void_P;
@@ -176,14 +180,15 @@ typedef const PROGMEM void_P void_vec_P;
 
 /**
  * Macro for sleep for number of milli-seconds. Requires include of the
- * Watchdog. 
+ * Watchdog and that it has been initiated with Watchdog::begin().
  * @param[in] ms milli-seconds.
  */
 #define MSLEEP(ms) Watchdog::delay(ms)
 
 /**
  * Macro for sleep for number of seconds. Requires include of the
- * Watchdog. Allowed values are; 1, 2, 4, and 8 seconds.
+ * Watchdog and that it has been initiated with
+ * Watchdog::begin(). Allowed values are; 1, 2, 4, and 8 seconds. 
  * @param[in] seconds.
  */
 #define SLEEP(seconds) Watchdog::delay(seconds * 1000)

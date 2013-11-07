@@ -29,18 +29,22 @@
 #include "Cosa/SPI.hh"
 #include "Cosa/Pins.hh"
 #include "Cosa/ExternalInterrupt.hh"
+#include "Cosa/Wireless.hh"
+#if !defined(__ARDUINO_TINYX5__)
 
 /**
  * Cosa Device Driver for Texas Instruments CC1101, Low-Power Sub-1
- * GHz RF Transceiver.
+ * GHz RF Transceiver. Note that this device requires data in big
+ * endian order. 
  * @See Also
  * Product Description, SWRS061H, Rev. H, 2012-10-09
  * http://www.ti.com/lit/ds/symlink/cc1101.pdf
  */
-class CC1101 : private SPI::Driver {
+class CC1101 : private SPI::Driver, public Wireless::Driver {
 private:
   /**
-   * Transaction header (pp. 29)
+   * Transaction header (pp. 29). Note 16-bit configuration variables are
+   * read/written in big endian order (MSB first) and require swapping.
    */
   union header_t {
     uint8_t as_uint8;		/**< 8-bit representation */
@@ -49,7 +53,7 @@ private:
       uint8_t burst:1;		/**< Burst(1) or Single(0) byte mode */
       uint8_t rw:1;		/**< Read(1) or Write(0) */
     };
-
+    
     /**
      * Construct header with given register address, burst and read
      * flag.
@@ -75,11 +79,16 @@ private:
 
   /**
    * Read single register value and status. Access status with
-   * get_status(). Returns register value.
+   * get_status(). Returns register value. 
    * @param[in] reg register address.
    * @return value
    */
-  uint8_t read(uint8_t reg);
+  uint8_t read(uint8_t reg)
+  {
+    m_status = spi.transfer(header_t(reg, 0, 1));
+    uint8_t res = spi.transfer(0);
+    return (res);
+  }
 
   /**
    * Read multiple register values into given buffer. Access status
@@ -88,14 +97,22 @@ private:
    * @param[in] buf buffer to store register values.
    * @param[in] count size of buffer and number of registers to read.
    */
-  void read(uint8_t reg, void* buf, size_t count);
+  void read(uint8_t reg, void* buf, size_t count)
+  {
+    m_status = spi.transfer(header_t(reg, 1, 1));
+    spi.read(buf, count);
+  }
 
   /**
    * Write single register value. Access status with get_status().
    * @param[in] reg register address.
    * @param[in] value to write to register.
    */
-  void write(uint8_t reg, uint8_t value);
+  void write(uint8_t reg, uint8_t value)
+  {
+    m_status = spi.transfer(header_t(reg, 0, 0));
+    spi.transfer(value);
+  }
 
   /**
    * Write multiple register values from given buffer. Access status
@@ -104,7 +121,11 @@ private:
    * @param[in] buf buffer with new register values.
    * @param[in] count size of buffer and number of registers to read.
    */
-  void write(uint8_t reg, const void* buf, size_t count);
+  void write(uint8_t reg, const void* buf, size_t count)
+  {
+    m_status = spi.transfer(header_t(reg, 1, 0));
+    spi.write(buf, count);
+  }
 
   /**
    * Write multiple register values from given buffer in program memory.
@@ -113,11 +134,15 @@ private:
    * @param[in] buf buffer in program memory with new register values.
    * @param[in] count size of buffer (and number of registers) to write
    */
-  void write_P(uint8_t reg, const uint8_t* buf, size_t count);
+  void write_P(uint8_t reg, const uint8_t* buf, size_t count)
+  {
+    m_status = spi.transfer(header_t(reg, 1, 0));
+    spi.write_P(buf, count);
+  }
 
   /**
-   * Handler for interrupt pin. Service interrupt on incoming package
-   * with valid checksum.
+   * Handler for interrupt pin. Service interrupt on incoming message
+   * with valid checksum. 
    */
   class IRQPin : public ExternalInterrupt {
     friend class CC1101;
@@ -139,7 +164,7 @@ private:
     {}
     
     /**
-     * @override
+     * @override Interrupt::Handler
      * Signal message has been receive and is available in receive fifo.
      * @param[in] arg (not used).
      */
@@ -201,9 +226,6 @@ public:
     CONFIG_MAX = 0x29		// Number of configuration registers
   } __attribute__((packed));
   
-  /** Network address */
-  uint8_t m_addr;
-
   /**
    * Read single configuration register value.
    * @param[in] reg register address.
@@ -272,12 +294,6 @@ public:
    * Maximum size of PA table.
    */
   static const size_t PATABLE_MAX = 8;
-
-  /**
-   * Maximum size of payload. Addressing will require one byte and
-   * radio status an additional two bytes.
-   */
-  static const size_t PAYLOAD_MAX = 61;
 
   /**
    * Read value from data register.
@@ -389,10 +405,15 @@ public:
 
   /**
    * Issue given command to device. Check documentation for required
-   * timing delay.
+   * timing delay per command.
    * @param[in] cmd command.
    */
-  void strobe(Command cmd);
+  void strobe(Command cmd)
+  {
+    spi.begin(this);
+    m_status = spi.transfer(header_t(cmd, 0, 0));
+    spi.end();
+  }
   
 public:
   /**
@@ -414,7 +435,7 @@ public:
     struct {			/**< Bit-field representation (little endian) */
       uint8_t avail:4;		/**< Number of bytes in RX or TX FIFO */
       uint8_t mode:3;		/**< Current main state machine mode */
-      uint8_t ready:1;		/**< Chip ready (should be low) */
+      uint8_t ready:1;		/**< Chip ready */
     };
     
     status_t(uint8_t value)
@@ -424,7 +445,7 @@ public:
   };
   
   /** 
-   * Get latest transaction status byte.
+   * Get latest transaction status.
    * @return status
    */
   status_t get_status()
@@ -434,25 +455,22 @@ public:
 
   /** 
    * Read status byte.
+   * @param[in] fifo status (0 = write, 1 = read)
    * @return status
    */
-  status_t read_status()
+  status_t read_status(uint8_t fifo = 1)
   {
     spi.begin(this);
-    m_status = spi.transfer(header_t(0,0,1));
+    m_status = spi.transfer(header_t(0,0,fifo));
     spi.end();
     return (m_status);
   }
 
   /**
-   * Set device in given mode. Return true(1) if successful otherwise
-   * false(0).
-   * @param[in] mode of operation.
-   * @param[in] cmd command.
-   * @param[in] retry number of attempts.
-   * @return bool
+   * Await given mode. 
+   * @param[in] mode to await.
    */
-  bool set_mode(Mode mode, Command cmd, uint8_t retry);
+  void await(Mode mode);
 
   /**
    * Main Radio Control State Machine State (pp. 93)
@@ -487,13 +505,13 @@ public:
    * Read Main Radio Control State Machine State.
    * @return state
    */
-  uint8_t read_marc_state()
+  State read_marc_state()
   {
-    return (read(MARCSTATE));
+    return ((State) read(MARCSTATE));
   }
 
   /**
-   * Received Package Status Bytes (Table. 27/28, pp. 37)
+   * Received Message Status Bytes (Table. 27/28, pp. 37)
    */
   union recv_status_t {
     uint8_t status[2];		/**< Two status bytes last in frame */
@@ -502,24 +520,15 @@ public:
       uint8_t lqi:7;		/**< Link Quality Indication */
       uint8_t crc:1;		/**< CRC status */
     };
-
-    recv_status_t()
-    {
-      status[0] = 0;
-      status[1] = 0;
-    }
   };
   
 private:
   /** Default configuration */
   static const uint8_t config[] __PROGMEM;
 
-  /** Interrupt Pin */
+  /** Interrupt Handler */
   IRQPin m_irq;
   
-  /** Package is available */
-  volatile uint8_t m_avail;
-
   /** Latest transaction status */
   status_t m_status;
 
@@ -528,168 +537,118 @@ private:
 
 public:
   /**
-   * Construct C1101 device driver connected to SPI bus with given
-   * chip select. 
-   * @param[in] addr network address.
-   * @param[in] csn chip select pin (Default D10).
-   * @param[in] irq interrupt pin (Default D2/EXT0).
+   * Maximum size of payload. The device allows 64 bytes payload.
+   * The length and destination addressing will require two bytes,
+   * source address one byte, port one byte and radio status an
+   * additional two bytes. This gives a payload max of 64 - 6 = 58.
    */
-  CC1101(uint8_t addr, 
+  static const size_t PAYLOAD_MAX = 58;
+  
+  /**
+   * Construct C1101 device driver with given network and device
+   * address. Connected to SPI bus and given chip select pin. Default
+   * pins are Arduino Nano IO Shield for CC1101 module are D10 chip
+   * select and D2/EXT0 external interrupt pin.
+   * @param[in] net network address.
+   * @param[in] dev device address.
+   * @param[in] csn chip select pin (Default D2/D10/D53).
+   * @param[in] irq interrupt pin (Default EXT0).
+   */
+  CC1101(uint16_t net, uint8_t dev, 
+#if defined(__ARDUINO_TINYX4__)
+	 Board::DigitalPin csn = Board::D2,
+#elif defined(__ARDUINO_MEGA__)
+	 Board::DigitalPin csn = Board::D53,
+#else
 	 Board::DigitalPin csn = Board::D10,
+#endif
 	 Board::ExternalInterruptPin irq = Board::EXT0) :
     SPI::Driver(csn, 0, SPI::DIV4_CLOCK, 0, SPI::MSB_ORDER, &m_irq),
-    m_addr(addr),
+    Wireless::Driver(net, dev),
     m_irq(irq, ExternalInterrupt::ON_FALLING_MODE, this),
-    m_avail(0),
     m_status(0)
   {
   }
 
   /**
+   * @override Wireless::Driver
    * Start and configure C1101 device driver. The configuration must
-   * set GDO2 to assert on received package. This device pin is
+   * set GDO2 to assert on received message. This device pin is
    * assumed to be connected the device driver interrupt pin (EXTn).
-   * @param[in] setting configuration (default NULL, use internal)
+   * Return true(1) if successful othewise false(0).
+   * @param[in] config configuration vector (default NULL)
    */
-  void begin(const uint8_t* setting = NULL);
+  virtual bool begin(const void* config = NULL);
 
   /**
-   * Set device in power down mode. Must be in idle mode.
-   */
-  void set_power_down_mode()
-  {
-    strobe(SPWD);
-  }
-
-  /**
-   * Set device in wakeup on radio mode. Must be in idle mode.
-   */
-  void set_wakeup_on_radio_mode()
-  {
-    strobe(SWOR);
-  }
-
-  /**
-   * Set device in receive mode. Return true(1) if successful otherwise
-   * false(0).
+   * @override Wireless::Driver
+   * Shut down the device driver. Return true(1) if successful
+   * otherwise false(0).
    * @return bool
    */
-  bool set_receive_mode(uint8_t retry = 8)
-  {
-    return (set_mode(RX_MODE, SRX, retry));
-  }
-
+  virtual bool end();
+    
   /**
-   * Set device in transmit mode. Return true(1) if successful otherwise
-   * false(0).
-   * @return bool
-   */
-  bool set_transmit_mode(uint8_t retry = 8)
-  {
-    return (set_mode(TX_MODE, STX, retry));
-  }
-
-  /**
-   * Set device address. 
-   * @param[in] addr address to set.
-   */
-  void set_address(uint8_t addr)
-  {
-    write(ADDR, addr);
-  }
-
-  /**
-   * Set communication synchronization word (16-bit).
-   * @param[in] word to use as synchronization.
-   */
-  void set_sync_word(int16_t word)
-  {
-    word = swap(word);
-    write(SYNC1, &word, sizeof(word));
-  }
-
-  /**
-   * Set device channel.
-   * @param[in] channel.
-   */
-  void set_channel(uint8_t channel)
-  {
-    write(CHANNR, channel);
-  }
-
-  /**
-   * Send message using a null terminated io vector message. Message
-   * is gathered from elements in io vector. The total size of the io
-   * vector buffers must be less than PAYLOAD_MAX. Returns error
-   * code(-1) if number of bytes is larger than number PAYLOAD_MAX. 
-   * Return error code(-2) if fails to set transmit mode.  
-   * @param[in] vec null terminated io vector.
+   * @override Wireless::Driver
+   * Send message in given null terminated io vector. Returns number
+   * of bytes sent. Returns error code(-1) if number of bytes is
+   * greater than PAYLOAD_MAX. Return error code(-2) if fails to set
+   * transmit mode.
+   * @param[in] dest destination network address.
+   * @param[in] port device port (or message type).
+   * @param[in] vec null termianted io vector.
    * @return number of bytes send or negative error code.
    */
-  int send(const iovec_t* vec);
+  virtual int send(uint8_t dest, uint8_t port, const iovec_t* vec);
 
   /**
+   * @override Wireless::Driver
    * Send message in given buffer, with given number of bytes. Returns
    * number of bytes sent. Returns error code(-1) if number of bytes
-   * is larger than number PAYLOAD_MAX. Return error code(-2) if fails
-   * to set transmit mode. 
+   * is greater than PAYLOAD_MAX. Return error code(-2) if fails to
+   * set transmit mode.  
    * @param[in] dest destination network address.
+   * @param[in] port device port (or message type).
    * @param[in] buf buffer to transmit.
-   * @param[in] count number of bytes in buffer.
+   * @param[in] len number of bytes in buffer.
    * @return number of bytes send or negative error code.
    */
-  int send(uint8_t dest, const void* buf, size_t count)
-  {
-    iovec_t vec[3];
-    iovec_t* vp = vec;
-    iovec_arg(vp, &dest, sizeof(dest));
-    iovec_arg(vp, buf, count);
-    iovec_end(vp);
-    return (send(vec));
-  }
+  virtual int send(uint8_t dest, uint8_t port, const void* buf, size_t len);
 
   /**
-   * Wait for incoming package for maximum of given number of
-   * milli-seconds. Returns true(1) if a package is available,
-   * otherwise on timeout false(0).
-   * @param[in] ms milli-seconds timeout.
-   * return bool
-   */
-  bool await(uint32_t ms);
-  
-  /**
+   * @override Wireless::Driver
    * Receive message and store into given buffer with given maximum
-   * size. Returns error code(-2) if no message is available and/or a
-   * timeout occured. Returns error code(-1) if the buffer size if to
-   * small for incoming message or if the receiver fifo has overflowed. 
-   * Otherwise the actual number of received bytes is returned. 
-   * @param[in] buf buffer to store incoming message.
-   * @param[in] count maximum number of bytes to receive.
-   * @param[in] ms maximum time out period.
-   * @return number of bytes received or negative error code.
-   */
-  int recv(void* buf, size_t count, uint32_t ms = 0L);
-  
-  /**
-   * Receive message and store into given buffer with given maximum
-   * size. The source network address is returned in the parameter src.
+   * length. The source network address is returned in the parameter src.
    * Returns error code(-2) if no message is available and/or a
    * timeout occured. Returns error code(-1) if the buffer size if to
    * small for incoming message or if the receiver fifo has overflowed. 
-   * Otherwise the actual number of received bytes is returned. It is
-   * possible to receive an empty message. Source network address will
-   * be valid.
+   * Otherwise the actual number of received bytes is returned
    * @param[out] src source network address.
+   * @param[out] port device port (or message type).
    * @param[in] buf buffer to store incoming message.
-   * @param[in] count maximum number of bytes to receive.
+   * @param[in] len maximum number of bytes to receive.
    * @param[in] ms maximum time out period.
    * @return number of bytes received or negative error code.
    */
-  int recv(uint8_t& src, void* buf, size_t count, uint32_t ms = 0L);
+  virtual int recv(uint8_t& src, uint8_t& port, 
+		   void* buf, size_t len, 
+		   uint32_t ms = 0L);
+
+  /**
+   * @override Wireless::Driver
+   * Set device in power down mode. 
+   */
+  virtual void powerdown();
+
+  /**
+   * @override Wireless::Driver
+   * Set device in wakeup on radio mode. 
+   */
+  virtual void wakeup_on_radio();
 
   /**
    * Return estimated input power level (dBm) from latest successful
-   * message receive.
+   * message received. 
    */
   int get_input_power_level()
   {
@@ -699,11 +658,12 @@ public:
 
   /**
    * Return link quality indicator from latest successful receive
-   * message. Lower level is better.
+   * message. Lower level is better quality.
    */
   int get_link_quality_indicator()
   {
     return (m_recv_status.lqi);
   }
 };
+#endif
 #endif

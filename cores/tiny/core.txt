@@ -1,12 +1,12 @@
-name=ATTiny Core
-description=A Beta ATTiny Core
+name=tiny
+description=ATTiny Core
 compiler=avr-gcc
 
 core.path=api
 core.flags=-DF_CPU=${build.f_cpu}::-DARDUINO=${core.version}::-D${board}
 core.header=Arduino.h
 core.version=100
-core.revision=1001
+core.revision=1002
 
 family=avrtiny
 

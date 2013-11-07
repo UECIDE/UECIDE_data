@@ -90,82 +90,87 @@ void setup()
 
 void loop()
 {
-  uint32_t start, stop;
+  uint32_t baseline, start, stop;
   uint32_t ns;
-  uint8_t cnt;
+  uint8_t cnt = 0;
 
-  INFO("Measure the time to perform 1,000 empty loop block", 0);
+  // INFO("Measure the time to perform an empty loop block", 0);
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
     for (uint16_t j = 0; j < 1000; j++) {
       __asm__ __volatile__("nop");
     }
   stop = RTC::micros();
-  ns = (stop - start) / 1000L;
-  INFO("nop:%ul ns\n", ns);
+  baseline = ns = (stop - start) / 1000L;
+  // INFO("nop:%ul ns\n", ns);
 
-  INFO("Measure the time to perform 1,000 input pin reads", 0);
-  cnt = 0;
+  INFO("Measure the time to perform an input pin read", 0);
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
     for (uint16_t j = 0; j < 1000; j++) {
-      if (inPin.is_set()) cnt++; else cnt--;
+      cnt += inPin.is_set();
       __asm__ __volatile__("nop");
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("inPin.is_set():%ul ns", ns);
-  if (cnt == 0) TRACE(cnt);
+  INFO("inPin.is_set():%ul ns", ns - baseline);
 
-  cnt = 0;
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
     for (uint16_t j = 0; j < 1000; j++) {
       uint8_t var;
       inPin >> var;
-      if (var) cnt++; else cnt--;
+      cnt += var;
       __asm__ __volatile__("nop");
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("inPin >> var:%ul ns", ns);
-  if (cnt == 0) TRACE(cnt);
+  INFO("inPin >> var:%ul ns", ns - baseline);
 
-  cnt = 0;
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
     for (uint16_t j = 0; j < 1000; j++) {
-      if (InputPin::read(7)) cnt++; else cnt--;
+      cnt += InputPin::read(7);
       __asm__ __volatile__("nop");
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("InputPin::read(7):%ul ns", ns);
-  if (cnt == 0) TRACE(cnt);
+  INFO("InputPin::read(7):%ul ns", ns - baseline);
 
-  cnt = 0;
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
     for (uint16_t j = 0; j < 1000; j++) {
-      if (digitalRead(7)) cnt++; else cnt--;
+      cnt += digitalRead(7);
       __asm__ __volatile__("nop");
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("read digitalRead(7):%ul ns\n", ns);
-  if (cnt == 0) TRACE(cnt);
-
-  INFO("Measure the time to perform 1,000 output pin writes", 0);
+  INFO("read digitalRead(7):%ul ns\n", ns - baseline);
+  
+  INFO("Measure the time to perform an output pin write", 0);
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
     for (uint16_t j = 0; j < 1000; j++) {
-      outPin.write(0);
+      outPin.write(1);
       outPin.write(0);
       __asm__ __volatile__("nop");
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("outPin.write(1); outPin.write(0):%ul ns", ns);
+  INFO("outPin.write():%ul ns", (ns - baseline) / 2);
+
+  start = RTC::micros();
+  for (uint16_t i = 0; i < 1000; i++)
+    for (uint16_t j = 0; j < 1000; j++) {
+      synchronized {
+	outPin._write(1);
+	outPin._write(0);
+      }
+      __asm__ __volatile__("nop");
+    }
+  stop = RTC::micros();
+  ns = (stop - start) / 1000L;
+  INFO("outPin._write():%ul ns", (ns - baseline) / 2);
 
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
@@ -176,7 +181,20 @@ void loop()
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("outPin.set; outPin.clear():%ul ns", ns);
+  INFO("outPin.set/clear():%ul ns", (ns - baseline) / 2);
+
+  start = RTC::micros();
+  for (uint16_t i = 0; i < 1000; i++)
+    for (uint16_t j = 0; j < 1000; j++) {
+      synchronized {
+	outPin._set();
+	outPin._clear();
+      }
+      __asm__ __volatile__("nop");
+    }
+  stop = RTC::micros();
+  ns = (stop - start) / 1000L;
+  INFO("outPin._set/_clear():%ul ns", (ns - baseline) / 2);
 
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
@@ -187,7 +205,7 @@ void loop()
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("outPin << 1; outPin << 0:%ul ns", ns);
+  INFO("outPin << n:%ul ns", (ns - baseline) / 2);
 
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
@@ -198,7 +216,7 @@ void loop()
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("OutputPin::write(8, 1); OutputPin::write(8, 0):%ul ns", ns);
+  INFO("OutputPin::write(8, n):%ul ns", (ns - baseline) / 2);
 
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
@@ -209,7 +227,7 @@ void loop()
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("write pin:digitalWrite(8, 1); digitalWrite(8, 0):%ul ns", ns);
+  INFO("digitalWrite(8, n):%ul ns", (ns - baseline) / 2);
 
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
@@ -220,7 +238,20 @@ void loop()
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("outPin.toggle(); outPin.toggle():%ul ns", ns);
+  INFO("outPin.toggle():%ul ns", (ns - baseline) / 2);
+
+  start = RTC::micros();
+  for (uint16_t i = 0; i < 1000; i++)
+    for (uint16_t j = 0; j < 1000; j++) {
+      synchronized {
+	outPin._toggle();
+	outPin._toggle();
+      }
+      __asm__ __volatile__("nop");
+    }
+  stop = RTC::micros();
+  ns = (stop - start) / 1000L;
+  INFO("outPin._toggle():%ul ns", (ns - baseline) / 2);
 
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
@@ -231,9 +262,9 @@ void loop()
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("write pin:OutputPin::toggle(8):%ul ns\n", ns);
+  INFO("OutputPin::toggle(8):%ul ns\n", (ns - baseline) / 2);
   
-  INFO("Measure the time to perform 1,000 output pin toggle", 0);
+  INFO("Measure the time to perform input pin read/output pin write", 0);
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
     for (uint16_t j = 0; j < 1000; j++) {
@@ -242,7 +273,7 @@ void loop()
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("outPin.write(!inPin.read()):%ul ns", ns);
+  INFO("outPin.write(!inPin.read()):%ul ns", ns - baseline);
 
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
@@ -252,7 +283,7 @@ void loop()
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("inPin.is_set/outPin.clear/set():%ul ns", ns);
+  INFO("inPin.is_set/outPin.clear/set():%ul ns", ns - baseline);
 
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
@@ -264,7 +295,7 @@ void loop()
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("inPin >> var; outPin << !var:%ul ns", ns);
+  INFO("inPin >> var; outPin << !var:%ul ns", ns - baseline);
 
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
@@ -274,7 +305,7 @@ void loop()
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("outPin.set(inPin.is_clear()):%ul ns", ns);
+  INFO("outPin.set(inPin.is_clear()):%ul ns", ns - baseline);
 
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
@@ -284,7 +315,7 @@ void loop()
     }
   stop = RTC::micros();
   ns = (stop - start) / 1000L;
-  INFO("OutputPin::write(8, !InputPin::read(7)):%ul ns", ns);
+  INFO("OutputPin::write(8, !InputPin::read(7)):%ul ns", ns - baseline);
 
   start = RTC::micros();
   for (uint16_t i = 0; i < 1000; i++)
@@ -304,7 +335,6 @@ void loop()
   for (uint16_t i = 0; i < 1000; i++) {
     uint8_t data = 0x55;
     dataPin.write(data, clockPin);
-    __asm__ __volatile__("nop");
   }
   stop = RTC::micros();
   ns = (stop - start);
@@ -317,7 +347,6 @@ void loop()
       dataPin.write(data & bit);
       clockPin.write(1);
       clockPin.write(0);
-      __asm__ __volatile__("nop");
     }
   }
   stop = RTC::micros();
@@ -328,10 +357,24 @@ void loop()
   for (uint16_t i = 0; i < 1000; i++) {
     uint8_t data = 0x55;
     for(uint8_t bit = 0x80; bit; bit >>= 1) {
+      synchronized {
+	dataPin._write(data & bit);
+	clockPin._write(1);
+	clockPin._write(0);
+      }
+    }
+  }
+  stop = RTC::micros();
+  ns = (stop - start);
+  INFO("pin._write();clock._write(1/0):%ul us", ns / 1000L);
+  
+  start = RTC::micros();
+  for (uint16_t i = 0; i < 1000; i++) {
+    uint8_t data = 0x55;
+    for(uint8_t bit = 0x80; bit; bit >>= 1) {
       dataPin.write(data & bit);
       clockPin.toggle();
       clockPin.toggle();
-      __asm__ __volatile__("nop");
     }
   }
   stop = RTC::micros();
@@ -342,10 +385,24 @@ void loop()
   for (uint16_t i = 0; i < 1000; i++) {
     uint8_t data = 0x55;
     for(uint8_t bit = 0x80; bit; bit >>= 1) {
+      synchronized {
+	dataPin._write(data & bit);
+	clockPin._toggle();
+	clockPin._toggle();
+      }
+    }
+  }
+  stop = RTC::micros();
+  ns = (stop - start);
+  INFO("pin._write/_toggle():%ul us", ns  / 1000L);
+  
+  start = RTC::micros();
+  for (uint16_t i = 0; i < 1000; i++) {
+    uint8_t data = 0x55;
+    for(uint8_t bit = 0x80; bit; bit >>= 1) {
       OutputPin::write(9, data & bit);
       OutputPin::write(10, 1);
       OutputPin::write(10, 0);
-      __asm__ __volatile__("nop");
     }
   }
   stop = RTC::micros();
@@ -359,7 +416,6 @@ void loop()
       OutputPin::write(9, data & bit);
       OutputPin::toggle(10);
       OutputPin::toggle(10);
-      __asm__ __volatile__("nop");
     }
   }
   stop = RTC::micros();
@@ -393,7 +449,6 @@ void loop()
     dataPin.write(data & 0x01);
     clockPin.toggle();
     clockPin.toggle();
-    __asm__ __volatile__("nop");
   }
   stop = RTC::micros();
   ns = (stop - start);
@@ -446,5 +501,6 @@ void loop()
   trace.println();
 
   // Stop the benchmark
+  TRACE(cnt);
   ASSERT(true == false);
 }
