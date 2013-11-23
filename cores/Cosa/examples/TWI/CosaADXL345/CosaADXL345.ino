@@ -33,7 +33,7 @@
 #include "Cosa/Memory.h"
 
 // Digital acceleratometer with alternative address
-ADXL345 acceleratometer(true);
+ADXL345 acceleratometer(1);
 
 void setup()
 {
@@ -54,6 +54,6 @@ void setup()
 void loop()
 {
   // Sample and print measurement to output stream
-  trace << acceleratometer;
+  trace << acceleratometer << endl;
   SLEEP(2);
 }

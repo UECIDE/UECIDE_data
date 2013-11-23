@@ -5,6 +5,7 @@ platform=pic32
 board=_BOARD_MEGA_
 board.flags=
 ldscript=chipKIT-application-32MX795F512.ld
+bootloader=bootloader
 upload.protocol=stk500v2
 upload.maximum_size=520192
 upload.speed=115200
@@ -13,7 +14,7 @@ build.f_cpu=80000000L
 build.core=pic32
 build.variant=Max32
 family=pic32
-version=0.4
+version=0.5
 core=chipKIT
 
 #

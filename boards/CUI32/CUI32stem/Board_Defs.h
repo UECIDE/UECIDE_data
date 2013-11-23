@@ -84,7 +84,7 @@
 
 /* Define the pin numbers for the LEDs
 */
-#define	PIN_LED1	13
+#define	PIN_LED1	64
 
 /* ------------------------------------------------------------ */
 /*					Button Declarations							*/

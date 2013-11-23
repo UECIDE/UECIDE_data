@@ -97,8 +97,7 @@ CC1101::IRQPin::on_interrupt(uint16_t arg)
 void 
 CC1101::await(Mode mode)
 {
-  while (read_status().mode != mode) 
-    Power::sleep(m_mode);
+  while (read_status().mode != mode) Watchdog::delay(24);
 }
 
 bool
@@ -118,7 +117,7 @@ CC1101::begin(const void* config)
   spi.end();
 
   // Adjust configuration with instance specific state
-  uint16_t sync = swap(m_addr.network);
+  uint16_t sync = hton(m_addr.network);
   spi.begin(this);
   write(PATABLE, 0x60);
   write(CHANNR, m_channel);

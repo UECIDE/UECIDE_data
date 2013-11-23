@@ -7,7 +7,7 @@ core.flags=-DF_CPU=${build.f_cpu}::-DARDUINO=${core.version}::-D${board}::-DMPID
 core.path=api
 core.header=WProgram.h
 core.version=23
-core.revision=1128
+core.revision=1129
 
 ldflags=-Wl,--gc-sections::-T::${find:${ldscript}}::-T::${core.root}/${core.path}/chipKIT-application-COMMON.ld
 
@@ -39,7 +39,7 @@ upload.pickit2.command.macosx=${core.root}/tools/macosx/pic32prog::-p::${filenam
 upload.avrdude.verbose=-v
 upload.avrdude.quiet=-q::-q
 
-sketch.upload=avrdude
+sketch.upload=avrdude::pickit2
 bootloader.upload=pickit2
 
 family=pic32
