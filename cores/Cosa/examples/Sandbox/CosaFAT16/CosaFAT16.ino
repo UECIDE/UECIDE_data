@@ -27,8 +27,14 @@
 #include "Cosa/Trace.hh"
 #include "Cosa/IOStream/Driver/UART.hh"
 #include "Cosa/Watchdog.hh"
+#include "Cosa/Memory.h"
 
+#define USE_ETHERNET_SHIELD
+#if defined(USE_ETHERNET_SHIELD)
+SD sd(Board::D4);
+#else
 SD sd;
+#endif
 
 void setup()
 {
@@ -36,6 +42,8 @@ void setup()
   RTC::begin();
   uart.begin(9600);
   trace.begin(&uart, PSTR("CosaFAT16: started"));
+  TRACE(free_memory());
+  TRACE(sizeof(FAT16::File));
   ASSERT(sd.begin(SPI::DIV4_CLOCK));
   ASSERT(FAT16::begin(&sd));
 }

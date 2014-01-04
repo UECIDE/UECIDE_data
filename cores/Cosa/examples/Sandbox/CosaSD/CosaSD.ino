@@ -36,9 +36,10 @@
 #include "Cosa/Trace.hh"
 #include "Cosa/IOStream/Driver/UART.hh"
 #include "Cosa/Watchdog.hh"
+#include "Cosa/Memory.h"
 
 // Uncomment/comment to enable/disable trace output to TFT/Canvas/Textbox
-#define USE_ST7735
+// #define USE_ST7735
 #ifdef USE_ST7735
 #include "Cosa/Canvas.hh"
 #include "Cosa/Canvas/Element/Textbox.hh"
@@ -52,8 +53,13 @@ static const uint8_t WIDTH = 6;
 static const uint8_t WIDTH = 32;
 #endif
 
-// Use SD default pins; SPI (MISO, MOSI, SCK), CS (D8)
+// Use SD default pins; SPI (MISO, MOSI, SCK), CS (D4/D8)
+#define USE_ETHERNET_SHIELD
+#if defined(USE_ETHERNET_SHIELD)
+SD sd(Board::D4);
+#else
 SD sd;
+#endif
 
 void setup()
 {
@@ -73,6 +79,8 @@ void setup()
   Watchdog::begin();
   RTC::begin();
   trace.begin(dev, PSTR("CosaDS: started"));
+  TRACE(free_memory());
+  TRACE(sizeof(SD));
 }
 
 void loop()

@@ -39,6 +39,20 @@ ExternalInterrupt(Board::ExternalInterruptPin pin,
   bit_field_set(EICRA, 0b11 << ix, mode << ix);
 }
 
+#elif defined(__ARDUINO_STANDARD_USB__)
+
+ExternalInterrupt::
+ExternalInterrupt(Board::ExternalInterruptPin pin, 
+		  InterruptMode mode, 
+		  bool pullup) :
+  IOPin((Board::DigitalPin) pin, INPUT_MODE, pullup)
+{
+  m_ix = pin - Board::EXT0;
+  ext[m_ix] = this;
+  uint8_t ix = (m_ix << 1);
+  bit_field_set(EICRA, 0b11 << ix, mode << ix);
+}
+
 #elif defined(__ARDUINO_MEGA__)
 
 ExternalInterrupt::
@@ -142,6 +156,7 @@ ExternalInterrupt::disable()
 #endif
 
 #if !defined(__ARDUINO_TINY__)
+
 void 
 ExternalInterrupt::enable() 
 { 
@@ -162,22 +177,26 @@ ExternalInterrupt::disable()
 
 ExternalInterrupt* ExternalInterrupt::ext[Board::EXT_MAX] = { NULL };
 
-#define INT_ISR(nr)					\
-ISR(INT ## nr ## _vect)					\
-{							\
-  if (ExternalInterrupt::ext[nr] != NULL)		\
-    ExternalInterrupt::ext[nr]->on_interrupt();		\
+#define INT_ISR(nr)							\
+ISR(INT ## nr ## _vect)							\
+{									\
+  if (ExternalInterrupt::ext[nr] != NULL)				\
+    ExternalInterrupt::ext[nr]->on_interrupt();				\
 }
 
 INT_ISR(0)
 #if defined(INT1_vect)
 INT_ISR(1)
+#endif
 #if defined(INT2_vect)
 INT_ISR(2)
+#endif
 #if defined(INT3_vect)
 INT_ISR(3)
+#endif
+#if defined(INT4_vect)
 INT_ISR(4)
+#endif
+#if defined(INT5_vect)
 INT_ISR(5)
-#endif
-#endif
 #endif
