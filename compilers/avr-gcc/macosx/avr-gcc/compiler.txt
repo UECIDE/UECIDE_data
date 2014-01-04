@@ -1,9 +1,13 @@
 name=avr-gcc
-version=4.3.2c
+version=4.3.2d
 
-cflags=-g::-Os::-w::-ffunction-sections::-fdata-sections
-cppflags=-g::-Os::-w::-fno-exceptions::-ffunction-sections::-fdata-sections
-ldflags=-Os::-Wl,--gc-sections
+optimize=-Os
+warnings=-w
+extra.flags=
+
+cflags=-g::${optimize}::${warnings}::-ffunction-sections::-fdata-sections::${extra.flags}
+cppflags=-g::${optimize}::${warnings}::-fno-exceptions::-ffunction-sections::-fdata-sections::${extra.flags}
+ldflags=${optimize}::-Wl,--gc-sections::${extra.flags}
 
 gcc=${compiler.root}/bin/avr-gcc
 gpp=${compiler.root}/bin/avr-g++

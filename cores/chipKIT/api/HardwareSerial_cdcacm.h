@@ -3,7 +3,7 @@
 //************************************************************************
 
 #include	"wiring.h"
-#include    "pins_arduino.h"
+#include <string.h>
 
 #define     USB_SERIAL_MIN_BUFFER_FREE      128
 

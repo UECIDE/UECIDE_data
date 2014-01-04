@@ -6,7 +6,7 @@ core.path=api
 core.flags=-DF_CPU=${build.f_cpu}::-DARDUINO=${core.version}::-D${board}
 core.header=Arduino.h
 core.version=1
-core.revision=0009
+core.revision=0010
 
 family=avr
 

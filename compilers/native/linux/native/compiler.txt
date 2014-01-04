@@ -1,0 +1,31 @@
+name=native
+version=0.0.1c
+
+optimize=-O2
+warnings=
+extra.flags=
+
+cflags=-g::${optimize}::${warnings}::${extra.flags}::-pthread
+cppflags=-g::${optimize}::${warnings}::${extra.flags}::-pthread
+ldflags=${optimize}::${extra.flags}::-pthread
+
+gcc=gcc
+gpp=g++
+ar=ar
+objcopy=objcopy
+objdump=objdump
+size=size
+binhex=cp
+
+compile.c=${gcc}::-c::${source.name}::-o::${object.name}::${cflags}::${core.flags}::${board.flags}::${includes}
+compile.cpp=${gpp}::-c::${source.name}::-o::${object.name}::${cppflags}::${core.flags}::${board.flags}::${includes}
+compile.S=${gcc}::-c::${source.name}::-o::${object.name}::${cflags}::${core.flags}::${board.flags}::${includes}
+compile.ar=${ar}::rcs::${library}::${object.name}
+compile.eep=${objcopy}::-O::ihex::-j::.eeprom::--set-section-flags=.eeprom=alloc,load::--no-change-warnings::--change-section-lma::.eeprom=0::${build.path}/${filename}.elf::${build.path}/${filename}.eep
+compile.hex=${binhex}::${build.path}/${filename}.elf::${build.path}/${filename}
+compile.lss=${objdump}::-h::-S::${build.path}/${filename}.elf
+compile.link=${gpp}::${ldflags}::-o::${build.path}/${filename}.elf::${object.filelist}::-L${build.path}::-L${libraries.path}::-Wl,--start-group::${libraries}::-Wl,--end-group::-lm
+compile.size=${size}::${build.path}/${filename}.elf
+
+compiler.error=^([^:]+):(\\d+):\\d+: error: (.*)
+compiler.warning=^([^:]+):(\\d+): Warning: (.*)

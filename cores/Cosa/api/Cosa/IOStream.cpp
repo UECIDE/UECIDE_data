@@ -24,6 +24,8 @@
  */
 
 #include "Cosa/IOStream.hh"
+#include "Cosa/Power.hh"
+#include <ctype.h>
 
 IOStream::Filter::Filter(Device* dev) : 
   m_dev(dev != NULL ? dev : &Device::null) 
@@ -94,7 +96,7 @@ void
 IOStream::print(IOStream::Device* buffer)
 {
   int c;
-  while ((c = buffer->getchar()) != -1)
+  while ((c = buffer->getchar()) != EOF)
     print((char) c);
 }
 
@@ -198,6 +200,44 @@ IOStream::vprintf_P(const char* format, va_list args)
   }
 }
 
+char* 
+IOStream::scan(char *s, size_t count)
+{
+  if (m_dev == NULL) return (NULL);
+  char* res = s;
+
+  // Skip whitespace
+  int c = m_dev->peekchar();
+  while (c <= ' ' && c != '\n') {
+    if (c == EOF) return (NULL);
+    c = m_dev->getchar();
+    c = m_dev->peekchar();
+  }
+  c = m_dev->getchar();
+
+  // Scan the token; identifier, number or special character
+  count -= 1;
+  *s++ = c;
+  if (isalpha(c)) {
+    while (count--) {
+      c = m_dev->peekchar();
+      if (!isalnum(c)) break;
+      c = m_dev->getchar();
+      *s++ = c;
+    }
+  }
+  else if (isdigit(c) || c == '-') {
+    while (count--) {
+      c = m_dev->peekchar();
+      if (!isdigit(c)) break;
+      c = m_dev->getchar();
+      *s++ = c;
+    }
+  }
+  *s = 0;
+  return (res);
+}
+
 IOStream::Device IOStream::Device::null;
 
 int 
@@ -215,7 +255,7 @@ IOStream::Device::room()
 int 
 IOStream::Device::putchar(char c) 
 { 
-  return (-1); 
+  return (EOF); 
 }
     
 int 
@@ -231,14 +271,14 @@ IOStream::Device::puts_P(const char* s)
   int n = 0;
   while ((c = pgm_read_byte(s++)) != 0)
     if (putchar(c) < 0) 
-      return (-1);
+      return (EOF);
     else
       n += 1;
   return (n); 
 }
 
 int 
-IOStream::Device::write(void* buf, size_t size) 
+IOStream::Device::write(const void* buf, size_t size) 
 { 
   char* ptr = (char*) buf;
   size_t n = 0;
@@ -252,7 +292,7 @@ int
 IOStream::Device::write(const iovec_t* vec)
 {
   size_t size = 0;
-  for (const iovec_t* vp = vec; vp->buf != 0; vp++) {
+  for (const iovec_t* vp = vec; vp->buf != NULL; vp++) {
     size_t res = (size_t) write(vp->buf, vp->size);
     if (res == 0) break;
     size += res;
@@ -263,13 +303,19 @@ IOStream::Device::write(const iovec_t* vec)
 int 
 IOStream::Device::peekchar() 
 { 
-  return (-1); 
+  return (EOF); 
+}
+
+int 
+IOStream::Device::peekchar(char c) 
+{ 
+  return (EOF); 
 }
 
 int 
 IOStream::Device::getchar() 
 { 
-  return (-1); 
+  return (EOF); 
 }
 
 char* 
@@ -278,18 +324,17 @@ IOStream::Device::gets(char *s, size_t count)
   char* res = s;
   while (count--) {
     int c = getchar();
-    if (c < 0) {
-      *s = 0;
-      return (0);
+    if (c == EOF && m_mode != NON_BLOCKING) {
+      while (c == EOF) {
+	Power::sleep(m_mode);
+	c = getchar();
+      }
     }
-    if (c == '\n') {
-      *s = 0;
-      return (res);
-    }
+    if (c == '\n' || c == IOStream::EOF) break;
     *s++ = c;
   }
-  *--s = 0;
-  return (res);
+  *s = 0;
+  return (s == res ? NULL : res);
 }
 
 int 
@@ -307,7 +352,7 @@ int
 IOStream::Device::read(iovec_t* vec) 
 {
   size_t size = 0;
-  for (const iovec_t* vp = vec; vp->buf != 0; vp++) {
+  for (const iovec_t* vp = vec; vp->buf != NULL; vp++) {
     size_t res = (size_t) read(vp->buf, vp->size);
     if (res == 0) break;
     size += res;
@@ -316,7 +361,7 @@ IOStream::Device::read(iovec_t* vec)
 }
 
 int 
-IOStream::Device::flush(uint8_t mode) 
+IOStream::Device::flush() 
 { 
-  return (-1); 
+  return (EOF); 
 }

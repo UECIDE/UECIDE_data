@@ -1,9 +1,13 @@
 name=pic32-gcc
-version=4.5.1c
+version=4.5.1e
 
-cflags=-g::-O2::-w::-ffunction-sections::-fdata-sections::-mno-smart-io::-mdebugger::-Wcast-align::-fno-short-double
-cppflags=-g::-O2::-w::-fno-exceptions::-ffunction-sections::-fdata-sections::-mno-smart-io::-mdebugger::-Wcast-align::-fno-short-double
-ldflags=-Wl,--gc-sections
+optimize=-O2
+warnings=
+extra.flags=
+
+cflags=-g::${optimize}::${warnings}::-ffunction-sections::-fdata-sections::-mno-smart-io::-mdebugger::-Wcast-align::-fno-short-double::${extra.flags}
+cppflags=-g::${optimize}::${warnings}::-fno-exceptions::-ffunction-sections::-fdata-sections::-mno-smart-io::-mdebugger::-Wcast-align::-fno-short-double::${extra.flags}
+ldflags=${optimize}::-Wl,--gc-sections::${extra.flags}
 
 gcc=${compiler.root}/bin/pic32-gcc
 gpp=${compiler.root}/bin/pic32-g++
@@ -24,3 +28,4 @@ compile.link=${gcc}::${ldflags}::-mprocessor=${build.mcu}::-o::${build.path}/${f
 compile.size=${size}::${build.path}/${filename}.elf
 
 compiler.error=^([^:]+):(\\d+):\\d+: error: (.*)
+compiler.warning=^([^:]+):(\\d+): Warning: (.*)

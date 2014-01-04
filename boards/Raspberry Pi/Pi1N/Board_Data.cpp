@@ -1,0 +1,63 @@
+#include <Arduino.h>
+
+#include <Board_Defs.h>
+
+const uint8_t digitalPinToGPIO[DIGITAL_PINS] = {
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    0,
+    NOT_A_PIN,
+    1,
+    NOT_A_PIN,
+    4,
+    14,
+    NOT_A_PIN,
+    15,
+    17,
+    18,
+    21,
+    NOT_A_PIN,
+    22,
+    23,
+    NOT_A_PIN,
+    24,
+    10,
+    NOT_A_PIN,
+    9,
+    25,
+    11,
+    8,
+    NOT_A_PIN,
+    7
+};
+
+const uint8_t digitalPinToPWM[DIGITAL_PINS] = {
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    FSEL_ALT5,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN,
+    NOT_A_PIN
+};

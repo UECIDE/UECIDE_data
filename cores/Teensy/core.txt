@@ -1,0 +1,31 @@
+name=Teensy
+description=Standard Teensy core
+compiler=avr-gcc
+
+core.path=api
+core.flags=-DF_CPU=${build.f_cpu}::-DARDUINO=${core.version}::-D${board}
+core.header=Arduino.h
+core.version=105
+core.revision=5
+
+family=teensy
+
+library.path=libraries
+examples.path=examples
+
+board=_UNKNOWN_BOARD_
+
+upload.teensy.name=Upload direct to an Arduino board
+upload.teensy.command.linux_arm=${core.root}/tools/linux_pi/teensy_loader_cli::-mmcu=${build.mcu}::-w::${build.path}/${filename}.hex
+upload.teensy.command.linux_amd64=${core.root}/tools/linux64/teensy_loader_cli::-mmcu=${build.mcu}::-w::${build.path}/${filename}.hex
+upload.teensy.command.linux_i386=${core.root}/tools/linux32/teensy_loader_cli::-mmcu=${build.mcu}::-w::${build.path}/${filename}.hex
+upload.teensy.command.macosx=${core.root}/tools/macosx/teensy_loader_cli::-mmcu=${build.mcu}::-w::${build.path}/${filename}.hex
+upload.teensy.command.windows=${core.root}/tools/windows/teensy_loader_cli::-mmcu=${build.mcu}::-w::${build.path}/${filename}.hex
+
+upload.teensy.using=usb
+upload.teensy.verbose=
+upload.teensy.quiet=
+upload.teensy.dtr=no
+upload.teensy.rts=no
+
+sketch.upload=teensy

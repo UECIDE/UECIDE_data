@@ -27,15 +27,15 @@
 #define __COSA_BOARD_STANDARD_HH__
 
 /**
- * Cosa STANDARD Board pin symbol definitions for the ATmega8,
- * ATmega168, ATmega328P based boards such as Arduino Uno, Mini Pro,
- * Nano, and LilyPad. Cosa does not use pin numbers as Arduino/Wiring, 
- * instead strong data type is used (enum types) for the specific 
- * pin classes; DigitalPin, AnalogPin, PWMPin, etc.
+ * Cosa STANDARD Board pin symbol definitions for the ATmega328P based
+ * boards such as Arduino Uno, Mini Pro, Nano, and LilyPad. Cosa does
+ * not use pin numbers as Arduino/Wiring, instead strong data type is
+ * used (enum types) for the specific pin classes; DigitalPin,
+ * AnalogPin, PWMPin, etc. 
  *
- * The pin numbers for ATmega8, ATmega168 and ATmega328P are mapped
- * as in Arduino. The static inline functions, SFR, BIT and UART, rely
- * on compiler optimizations to be reduced. 
+ * The pin numbers for ATmega328P are mapped as in Arduino. The static
+ * inline functions, SFR, BIT and UART, rely on compiler optimizations
+ * to be reduced.  
  */
 class Board {
   friend class Pin;
@@ -112,6 +112,14 @@ public:
     D11,
     D12,
     D13,
+    D14,
+    D15,
+    D16,
+    D17,
+    D18,
+    D19,
+    D20,
+    D21,
     LED = D13
   } __attribute__((packed));
 
@@ -134,11 +142,9 @@ public:
    * time checking
    */
   enum PWMPin {
-#if !defined(__AVR_ATmega8__)
     PWM0 = D3,
     PWM1 = D5,
     PWM2 = D6,
-#endif
     PWM3 = D9,
     PWM4 = D10,
     PWM5 = D11
@@ -224,12 +230,19 @@ extern "C" {
   void SPI_STC_vect(void) __attribute__ ((signal));
   void TIMER0_COMPA_vect(void) __attribute__ ((signal));
   void TIMER0_COMPB_vect(void) __attribute__ ((signal));
+  void TIMER0_OVF_vect(void) __attribute__ ((signal));
+  void TIMER1_CAPT_vect(void)  __attribute__ ((signal));
   void TIMER1_COMPA_vect(void) __attribute__ ((signal));
   void TIMER1_COMPB_vect(void) __attribute__ ((signal));
+  void TIMER1_OVF_vect(void) __attribute__ ((signal));
+  void TIMER2_COMPA_vect(void) __attribute__ ((signal));
+  void TIMER2_COMPB_vect(void) __attribute__ ((signal));
+  void TIMER2_OVF_vect(void) __attribute__ ((signal));
   void TWI_vect(void) __attribute__ ((signal));
   void WDT_vect(void) __attribute__ ((signal));
-  void USART_UDRE_vect(void) __attribute__ ((signal));
   void USART_RX_vect(void) __attribute__ ((signal));
+  void USART_TX_vect(void) __attribute__ ((signal));
+  void USART_UDRE_vect(void) __attribute__ ((signal));
 }
 #endif
 

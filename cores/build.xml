@@ -12,6 +12,8 @@
         <antcall target="build-core"> <param name="coredir" value="tinyNoMillis"/> </antcall>
         <antcall target="build-core"> <param name="coredir" value="maple"/> </antcall>
         <antcall target="build-core"> <param name="coredir" value="RetroBSD"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="RaspberryPi"/> </antcall>
+        <antcall target="build-core"> <param name="coredir" value="Teensy"/> </antcall>
     </target>
     
     <target name="build-core">

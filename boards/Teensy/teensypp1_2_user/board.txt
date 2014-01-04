@@ -1,0 +1,17 @@
+name=Teensy++ 1.0 (2MHz, USB serial)
+group=Teensy
+upload.maximum_size=64512
+upload.maximum_ram_size=4096
+upload.speed=12000000
+upload.disable_flushing=true
+bootloader.path=undefined
+serial.restart_cmd=true
+serial.safe_baud_rates_only=true
+upload.avrdude_wrapper=teensy_reboot
+build.mcu=at90usb646
+board.flags=-DTEENSYDUINO=117::-DLAYOUT_US_ENGLISH::-DUSB_SERIAL
+build.core=teensy
+build.elide_constructors=true
+version=1.2
+family=teensy
+build.f_cpu=2000000L

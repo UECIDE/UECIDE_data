@@ -272,12 +272,14 @@ public:
   bool read_power_supply();
 
   /**
-   * Print the given thermometer reading with two decimals to given
-   * output stream. The temperature is in Celcius. 
-   * @param[in] outs stream to print device information to.
-   * @param[in] thermometer device.
+   * Print temperature reading (fixed point value) to given output
+   * stream. 
+   * @param[in] outs output stream.
+   * @param[in] temp temperature fixed point number.
    */
-  static void print(IOStream& outs, int16_t temperature);
+  static void print(IOStream& outs, int16_t temp);
+
+  friend IOStream& operator<<(IOStream& outs, DS18B20& thermometer);
 };
 
 /**

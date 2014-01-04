@@ -275,21 +275,6 @@ public:
   }
 
   /**
-   * Construct abstract input pin given Arduino pin number.
-   * @param[in] pin number (analog pin).
-   * @param[in] mode pin mode (default NORMAL_MODE).
-   */
-  InputPin(Board::AnalogPin pin, Mode mode = NORMAL_MODE) :
-    Pin((uint8_t) pin)
-  {
-    if (mode == PULLUP_MODE) {
-      synchronized {
-	*PORT() |= m_mask; 
-      }
-    }
-  }
-
-  /**
    * Set input pin to given mode.
    * @param[in] pin number.
    * @param[in] mode pin mode (default NORMAL_MODE).
@@ -315,20 +300,6 @@ public:
    * @param[in] initial value.
    */
   OutputPin(Board::DigitalPin pin, uint8_t initial = 0) : 
-    Pin((uint8_t) pin) 
-  { 
-    synchronized {
-      *DDR() |= m_mask; 
-    }
-    set(initial);
-  }
-
-  /**
-   * Construct an abstract output pin for given Arduino pin number.
-   * @param[in] pin number.
-   * @param[in] initial value.
-   */
-  OutputPin(Board::AnalogPin pin, uint8_t initial = 0) : 
     Pin((uint8_t) pin) 
   { 
     synchronized {
@@ -675,14 +646,6 @@ public:
       *PORT() |= m_mask; 
     set_mode(mode);
   }
-  IOPin(Board::AnalogPin pin, Mode mode = INPUT_MODE, bool pullup = false) : 
-    OutputPin(pin),
-    m_mode(mode)
-  {
-    if (pullup)
-      *PORT() |= m_mask; 
-    set_mode(mode);
-  }
 
   /**
    * Change IO-pin to given mode.
@@ -755,18 +718,18 @@ public:
     A1V1_REFERENCE = _BV(REFS1),
     A2V56_REFERENCE = (_BV(REFS1) | _BV(REFS0))
   } __attribute__((packed));
-#elif defined(__ARDUINO_TINYX5__)
-  enum Reference {
-    AVCC_REFERENCE = 0,
-    APIN_REFERENCE = _BV(REFS0),
-    A1V1_REFERENCE = _BV(REFS1),
-    A2V56_REFERENCE = (_BV(REFS2) | _BV(REFS1))
-  } __attribute__((packed));
 #elif defined(__ARDUINO_TINYX4__)
   enum Reference {
     AVCC_REFERENCE = 0,
     APIN_REFERENCE = _BV(REFS0),
     A1V1_REFERENCE = _BV(REFS1)
+  } __attribute__((packed));
+#elif defined(__ARDUINO_TINYX5__) || defined(__ARDUINO_TINYX61__)
+  enum Reference {
+    AVCC_REFERENCE = 0,
+    APIN_REFERENCE = _BV(REFS0),
+    A1V1_REFERENCE = _BV(REFS1),
+    A2V56_REFERENCE = (_BV(REFS2) | _BV(REFS1))
   } __attribute__((packed));
 #endif
 
@@ -939,7 +902,9 @@ public:
    * interrupt handler and environment. The vector of pins should be 
    * defined in program memory using PROGMEM.
    * @param[in] pins vector with analog pins.
-   * @param[in] count number of analog pins in set.
+   * @param[in] buffer analog pin value storage.
+   * @param[in] count number of pins in vector.
+   * @param[in] ref reference voltage.
    */
   AnalogPins(const Board::AnalogPin* pins, 
 	     uint16_t* buffer, uint8_t count,

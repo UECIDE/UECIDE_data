@@ -34,38 +34,51 @@
 #include "Cosa/Watchdog.hh"
 #include "Cosa/RTC.hh"
 
-// Select Wireless device driver (network = 0xC05A, device = 0x02)
-// #include "Cosa/Wireless/Driver/CC1101.hh"
-// CC1101 rf(0xC05A, 0x02);
+// Connect button between ground and pin TinyX4 EXT0/D10, TinyX5 EXT0/D2, 
+// Mega EXT2/D29 and others to Arduino EXT1 which is Standard/D3 and 
+// Mighty/D11.
+#define NETWORK 0xC05A
+#if defined(__ARDUINO_MEGA__)
+#define DEVICE 0x52
+#define EXT Board::EXT2
+#elif defined(__ARDUINO_TINY__)
+#define DEVICE 0x50
+#define EXT Board::EXT0
+#else
+#define DEVICE 0x51
+#define EXT Board::EXT1
+#endif
 
-// #include "Cosa/Wireless/Driver/NRF24L01P.hh"
-// NRF24L01P rf(0xC05A, 0x02);
+// Select Wireless device driver
+#define USE_CC1101
+// #define USE_NRF24L01P
+// #define USE_VWI
 
+#if defined(USE_CC1101)
+#include "Cosa/Wireless/Driver/CC1101.hh"
+CC1101 rf(NETWORK, DEVICE);
+
+#elif defined(USE_NRF24L01P)
+#include "Cosa/Wireless/Driver/NRF24L01P.hh"
+NRF24L01P rf(NETWORK, DEVICE);
+
+#elif defined(USE_VWI)
 #include "Cosa/Wireless/Driver/VWI.hh"
 #include "Cosa/Wireless/Driver/VWI/Codec/VirtualWireCodec.hh"
 VirtualWireCodec codec;
-#if defined(__ARDUINO_TINYX5__)
-VWI rf(0xC05A, 0x03, 4000, Board::D1, Board::D0, &codec);
+#define SPEED 4000
+#if defined(__ARDUINO_TINY__)
+VWI rf(NETWORK, DEVICE, SPEED, Board::D1, Board::D0, &codec);
 #else
-VWI rf(0xC05A, 0x02, 4000, Board::D7, Board::D8, &codec);
+VWI rf(NETWORK, DEVICE, SPEED, Board::D7, Board::D8, &codec);
+#endif
 #endif
 
-// Connect button between ground and pin TinyX4 EXT0/D10, TinyX5
-// EXT0/D2, Mega EXT2/D29 and others to Arduino EXT1 which is
-// Standard/D3 and Mighty/D11.
 class Button : public ExternalInterrupt {
 public:
-  Button() : 
-#if defined(__ARDUINO_MEGA__)
-    ExternalInterrupt(Board::EXT2, ExternalInterrupt::ON_LOW_LEVEL_MODE, true)
-#elif defined(__ARDUINO_TINY__)
-    ExternalInterrupt(Board::EXT0, ExternalInterrupt::ON_LOW_LEVEL_MODE, true)
-#else
-    ExternalInterrupt(Board::EXT1, ExternalInterrupt::ON_LOW_LEVEL_MODE, true)
-#endif
-  {}
+  Button() : ExternalInterrupt(EXT, ON_LOW_LEVEL_MODE, true) {}
 
-  virtual void on_interrupt(uint16_t arg = 0) 
+  virtual void on_interrupt(uint16_t arg) 
   {
     Event::push(Event::NULL_TYPE, NULL);
     disable();
@@ -82,22 +95,23 @@ AnalogPin temperature(Board::A3);
 void setup()
 {
   // Initiate Watchdog with 512 ms period. Start RTC and Wireless device
+  Watchdog::begin(512, SLEEP_MODE_PWR_DOWN);
   RTC::begin();
   rf.begin();
   
   // Put the hardware in power down
-  Power::all_disable();
   rf.powerdown();
-
+  Power::all_disable();
+  
   // Allow wakeup on button
   wakeup.enable();  
 }
 
-struct dlt_msg_t {
-  uint32_t timestamp;
-  uint16_t luminance;
-  uint16_t temperature;
-  uint16_t battery;
+struct dlt_msg_t {	       // Digital Luminance Temperature message
+  uint32_t timestamp;	       // Seconds since start of sensor
+  uint16_t luminance;	       // Light level (0..1023 raw value)
+  uint16_t temperature;	       // Room temperature (0..1023 raw value)
+  uint16_t battery;	       // Battery level (mV)
 };
 static const uint8_t DIGITAL_LUMINANCE_TEMPERATURE_TYPE = 0x04;
 
@@ -111,8 +125,9 @@ void loop()
   Power::all_enable();
 
   // Construct the message with sample values and broadcast
+  uint32_t now = Watchdog::millis();
   dlt_msg_t msg;
-  msg.timestamp = RTC::micros();
+  msg.timestamp = (now + 500L) / 1000;
   msg.luminance = luminance.sample();
   msg.temperature = temperature.sample();
   msg.battery = AnalogPin::bandgap();
@@ -124,8 +139,6 @@ void loop()
 
   // Debounce the button before allowing further interrupts. This also
   // gives periodic (1 second) message send when the button is kept low.
-  Watchdog::begin(512, SLEEP_MODE_PWR_DOWN);
-  Watchdog::delay(1024);
-  Watchdog::end();
+  Watchdog::delay(1000 - (Watchdog::millis() - now));
   wakeup.enable();  
 }

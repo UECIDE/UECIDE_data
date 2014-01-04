@@ -126,6 +126,11 @@ union univ32_t {
 #define UNLIKELY(x) __builtin_expect((x),0)
 
 /**
+ * Compiler warning on unused varable.
+ */
+#define UNUSED(x) (void) (x)
+
+/**
  * Macro for number of elements in a vector.
  * @param[in] x vector
  * @return number of elements
@@ -263,8 +268,7 @@ iovec_arg(iovec_t* &vp, const void* buf, size_t size)
 
 /**
  * Mark end of io-vector buffer at given index.
- * @param[in] vec io vector.
- * @param[in] ix index in vector.
+ * @param[inout] vp io vector.
  */
 inline void
 iovec_end(iovec_t* &vp)
@@ -370,5 +374,20 @@ swap(int32_t value)
 #define ntoh(x) swap(x)
 #define hton(x) swap(x)
 
+/**
+ * Template map function for given class/data type.
+ * @param[in] T class value to map.
+ * @param[in] x value to map.
+ * @param[in] in_min minimum value in input range.
+ * @param[in] in_max maximum value in input range.
+ * @param[in] out_min minimum value in output range.
+ * @param[in] out_max maximum value in output range.
+ * @return mapping
+ */
+template<class T>
+T map(T x, T in_min, T in_max, T out_min, T out_max)
+{
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 #endif
 

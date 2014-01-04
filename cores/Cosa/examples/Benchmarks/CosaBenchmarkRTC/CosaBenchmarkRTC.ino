@@ -64,31 +64,40 @@ void setup()
   start = RTC::micros();
   uint32_t us = RTC::micros();
   stop = RTC::micros();
-  INFO("RTC::micros(): %ul", stop - start);
+  INFO("RTC::micros(): %ul us", stop - start);
   
   start = RTC::micros();
   uint32_t ms = RTC::millis();
   stop = RTC::micros();
-  INFO("RTC::millis(): %ul", stop - start);
+  INFO("RTC::millis(): %ul us", stop - start);
 
   start = RTC::micros();
   DELAY(10);
   stop = RTC::micros();
-  INFO("DELAY(10): %ul", stop - start);
+  INFO("DELAY(10): %ul us", stop - start);
 
   start = RTC::micros();
   DELAY(100);
   stop = RTC::micros();
-  INFO("DELAY(100): %ul", stop - start);
+  INFO("DELAY(100): %ul us", stop - start);
+
+  start = RTC::micros();
+  SLEEP(1);
+  stop = RTC::micros();
+  INFO("SLEEP(1): %ul us", stop - start);
 
   // Start the measurement
   TRACE(RTC::seconds());
-  for (uint8_t i = 0; i < 4; i++) {
-    SLEEP(1);
+  TRACE(RTC::micros());
+  TRACE(RTC::millis());
+  for (uint8_t i = 0; i < 5; i++) {
+    Watchdog::delay(1000);
+    TRACE(RTC::micros());
+    TRACE(RTC::millis());
     TRACE(RTC::seconds());
   }
 
-  // Measure and validate micro-second level
+  // Measure and validate micro-second level (RTC)
   err = 0;
   for (uint32_t i = 0; i < 100000; i++) {
     start = RTC::micros();
@@ -105,6 +114,23 @@ void setup()
   TRACE(RTC::seconds());
   INFO("DELAY(100): 100000 measurement/validation (err = %ul)", err);
 
+  // Measure and validate milli-second level (RTC)
+  err = 0;
+  for (uint32_t i = 0; i < 100; i++) {
+    start = RTC::millis();
+    RTC::delay(100);
+    stop = RTC::millis();
+    uint32_t diff = stop - start;
+    if (diff > 115) {
+      trace.printf_P(PSTR("%ul: start = %ul, stop = %ul, diff = %ul\n"), 
+		     i, start, stop, diff);
+      Watchdog::delay(128);
+      err++;
+    }
+  }
+  TRACE(RTC::seconds());
+  INFO("RTC::delay(100): 100 measurement/validation (err = %ul)", err);
+
   // Measure and validate milli-second level (Watchdog)
   err = 0;
   for (uint32_t i = 0; i < 100; i++) {
@@ -112,7 +138,7 @@ void setup()
     Watchdog::delay(100);
     stop = RTC::millis();
     uint32_t diff = stop - start;
-    if (diff > 108) {
+    if (diff > 115) {
       trace.printf_P(PSTR("%ul: start = %ul, stop = %ul, diff = %ul\n"), 
 		     i, start, stop, diff);
       Watchdog::delay(128);
@@ -121,23 +147,6 @@ void setup()
   }
   TRACE(RTC::seconds());
   INFO("Watchdog::delay(100): 100 measurement/validation (err = %ul)", err);
-
-  // Measure and validate milli-second level (RTC)
-  err = 0;
-  for (uint32_t i = 0; i < 100; i++) {
-    start = RTC::millis();
-    RTC::delay(100);
-    stop = RTC::millis();
-    uint32_t diff = stop - start;
-    if (diff > 100) {
-      trace.printf_P(PSTR("%ul: start = %ul, stop = %ul, diff = %ul\n"), 
-		     i, start, stop, diff);
-      Watchdog::delay(128);
-      err++;
-    }
-  }
-  TRACE(RTC::seconds());
-  INFO("RTC::delay(100): 100 measurement/validation (err = %ul)\n", err);
 }
 
 void loop()

@@ -85,7 +85,7 @@ OutputPin::write(uint16_t value, uint8_t bits, uint16_t us)
   if (bits == 0) return;
   synchronized {
     do {
-      write(value & 0x01);
+      _write(value & 0x01);
       DELAY(us);
       value >>= 1;
     } while (--bits);
@@ -337,15 +337,15 @@ PWMPin::set(uint8_t duty)
 {
   switch (m_pin) {
   case Board::PWM0:
-    bit_set(TCCR3B, COM3B1);
+    bit_set(TCCR3A, COM3B1);
     OCR3B = duty;
     return;
   case Board::PWM1:
-    bit_set(TCCR3C, COM3C1);
+    bit_set(TCCR3A, COM3C1);
     OCR3C = duty;
     return;
   case Board::PWM2:
-    bit_set(TCCR0B, COM0B1);
+    bit_set(TCCR0A, COM0B1);
     OCR0B = duty;
     return;
   case Board::PWM3:
@@ -357,15 +357,15 @@ PWMPin::set(uint8_t duty)
     OCR4A = duty;
     return;
   case Board::PWM5:
-    bit_set(TCCR4B, COM4B1);
+    bit_set(TCCR4A, COM4B1);
     OCR4B = duty;
     return;
   case Board::PWM6:
-    bit_set(TCCR4C, COM4C1);
+    bit_set(TCCR4A, COM4C1);
     OCR4C = duty;
     return;
   case Board::PWM7:
-    bit_set(TCCR2B, COM2B1);
+    bit_set(TCCR2A, COM2B1);
     OCR2B = duty;
     return;
   case Board::PWM8:
@@ -377,50 +377,12 @@ PWMPin::set(uint8_t duty)
     OCR1A = duty;
     return;
   case Board::PWM10:
-    bit_set(TCCR1B, COM1B1);
+    bit_set(TCCR1A, COM1B1);
     OCR1B = duty;
     return;
   case Board::PWM11:
     bit_set(TCCR0A, COM0A1);
     OCR0A = duty;
-    return;
-  default:
-    OutputPin::set(duty);
-  }
-}
-
-#elif defined(__ARDUINO_TINYX5__)
-
-PWMPin::PWMPin(Board::PWMPin pin, uint8_t duty) : 
-  OutputPin((Board::DigitalPin) pin) 
-{ 
-  TCCR0A |= _BV(WGM01) | _BV(WGM00);
-  TCCR0B |= _BV(CS01)  | _BV(CS00);
-  set(duty); 
-}
-
-uint8_t
-PWMPin::get_duty()
-{
-  switch (m_pin) {
-  case Board::PWM0: return (OCR0A);
-  case Board::PWM1: return (OCR0B);
-  default:
-    return (is_set());
-  }
-}
-
-void 
-PWMPin::set(uint8_t duty)
-{
-  switch (m_pin) {
-  case Board::PWM0:
-    bit_set(TCCR0A, COM0A1);
-    OCR0A = duty;
-    return;
-  case Board::PWM1:
-    bit_set(TCCR0B, COM0B1);
-    OCR0B = duty;
     return;
   default:
     OutputPin::set(duty);
@@ -469,16 +431,110 @@ PWMPin::set(uint8_t duty)
     OCR0A = duty;
     return;
   case Board::PWM1:
-    bit_set(TCCR0B, COM0B1);
+    bit_set(TCCR0A, COM0B1);
     OCR0B = duty;
     return;
   case Board::PWM2:
     bit_set(TCCR1A, COM1A1);
-    OCR0A = duty;
+    OCR1A = duty;
     return;
   case Board::PWM3:
-    bit_set(TCCR1B, COM1B1);
+    bit_set(TCCR1A, COM1B1);
+    OCR1B = duty;
+    return;
+  default:
+    OutputPin::set(duty);
+  }
+}
+
+#elif defined(__ARDUINO_TINYX5__)
+
+PWMPin::PWMPin(Board::PWMPin pin, uint8_t duty) : 
+  OutputPin((Board::DigitalPin) pin) 
+{ 
+  TCCR0A |= _BV(WGM01) | _BV(WGM00);
+  TCCR0B |= _BV(CS01) | _BV(CS00);
+  set(duty); 
+}
+
+uint8_t
+PWMPin::get_duty()
+{
+  switch (m_pin) {
+  case Board::PWM0: return (OCR0A);
+  case Board::PWM1: return (OCR0B);
+  default:
+    return (is_set());
+  }
+}
+
+void 
+PWMPin::set(uint8_t duty)
+{
+  switch (m_pin) {
+  case Board::PWM0:
+    bit_set(TCCR0A, COM0A1);
+    OCR0A = duty;
+    return;
+  case Board::PWM1:
+    bit_set(TCCR0A, COM0B1);
     OCR0B = duty;
+    return;
+  default:
+    OutputPin::set(duty);
+  }
+}
+
+#elif defined(__ARDUINO_TINYX61__)
+
+PWMPin::PWMPin(Board::PWMPin pin, uint8_t duty) : 
+  OutputPin((Board::DigitalPin) pin) 
+{
+  // Prescale(64)
+  TCCR1B |= _BV(CS12)  | _BV(CS11)  | _BV(CS10);
+
+  // PWM mode
+  switch (m_pin) {
+  case Board::PWM0: 
+    TCCR1A |= _BV(PWM1A);
+    break;
+  case Board::PWM1: 
+    TCCR1A |= _BV(PWM1B);
+    break;
+  case Board::PWM2: 
+    TCCR1C |= _BV(PWM1D);
+    break;
+  }
+  set(duty); 
+}
+
+uint8_t
+PWMPin::get_duty()
+{
+  switch (m_pin) {
+  case Board::PWM0: return (OCR1A);
+  case Board::PWM1: return (OCR1B);
+  case Board::PWM2: return (OCR1D);
+  default:
+    return (is_set());
+  }
+}
+
+void 
+PWMPin::set(uint8_t duty)
+{
+  switch (m_pin) {
+  case Board::PWM0:
+    bit_set(TCCR1C, COM1A0);
+    OCR1A = duty;
+    return;
+  case Board::PWM1:
+    bit_set(TCCR1C, COM1B0);
+    OCR1B = duty;
+    return;
+  case Board::PWM2:
+    bit_set(TCCR1C, COM1D0);
+    OCR1D = duty;
     return;
   default:
     OutputPin::set(duty);
@@ -497,7 +553,7 @@ PWMPin::set(uint16_t value, uint16_t min, uint16_t max)
   set(duty);
 }
 
-AnalogPin* AnalogPin::sampling_pin = 0;
+AnalogPin* AnalogPin::sampling_pin = NULL;
 
 void 
 AnalogPin::prescale(uint8_t factor)
@@ -509,7 +565,7 @@ AnalogPin::prescale(uint8_t factor)
 bool
 AnalogPin::sample_request(uint8_t pin, uint8_t ref)
 {
-  if (sampling_pin != 0) return (false);
+  if (sampling_pin != NULL) return (false);
   if (pin >= Board::A0) pin -= Board::A0;
   loop_until_bit_is_clear(ADCSRA, ADSC);
   sampling_pin = this;
@@ -534,7 +590,7 @@ AnalogPin::bandgap(uint16_t vref)
 uint16_t 
 AnalogPin::sample(uint8_t pin, Reference ref)
 {
-  if (sampling_pin != 0) return (0xffffU);
+  if (sampling_pin != NULL) return (0xffffU);
   if (pin >= Board::A0) pin -= Board::A0;
   loop_until_bit_is_clear(ADCSRA, ADSC);
   ADMUX = (ref | pin);
@@ -548,7 +604,7 @@ AnalogPin::sample_await()
 {
   if (sampling_pin != this) return (m_value);
   synchronized {
-    sampling_pin = 0;
+    sampling_pin = NULL;
     bit_clear(ADCSRA, ADIE);
   }
   loop_until_bit_is_clear(ADCSRA, ADSC);
@@ -577,13 +633,13 @@ AnalogPin::on_interrupt(uint16_t value)
     sampling_pin->m_value = value;
   else
     Event::push(event, this, value);
-  sampling_pin = 0;
+  sampling_pin = NULL;
 }
 
 ISR(ADC_vect) 
 { 
   bit_clear(ADCSRA, ADIE);
-  if (AnalogPin::sampling_pin != 0) 
+  if (AnalogPin::sampling_pin != NULL) 
     AnalogPin::sampling_pin->on_interrupt(ADCW);
 }
 
@@ -607,7 +663,7 @@ AnalogPins::on_interrupt(uint16_t value)
   }
 }
 
-AnalogComparator* AnalogComparator::comparator = 0;
+AnalogComparator* AnalogComparator::comparator = NULL;
 
 void 
 AnalogComparator::on_interrupt(uint16_t arg) 
@@ -617,6 +673,6 @@ AnalogComparator::on_interrupt(uint16_t arg)
 
 ISR(ANALOG_COMP_vect)
 { 
-  if (AnalogComparator::comparator != 0) 
+  if (AnalogComparator::comparator != NULL) 
     AnalogComparator::comparator->on_interrupt();
 }

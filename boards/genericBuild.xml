@@ -55,7 +55,7 @@
         <exec executable="rsync">
             <arg value="-ap" />
             <arg value="${file}" />
-            <arg value="autobuild:/var/www/uecide/p/boards/" />
+            <arg value="autobuild.majenko.co.uk:/var/www/uecide/p/boards/" />
         </exec>
     </target>
 

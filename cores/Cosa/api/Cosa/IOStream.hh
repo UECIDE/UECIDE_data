@@ -27,8 +27,6 @@
 #define __COSA_IOSTREAM_HH__
 
 #include "Cosa/Types.h"
-#undef putchar
-#undef getchar
 
 /**
  * Basic in-/output stream support class. Requires implementation of
@@ -36,11 +34,43 @@
  */
 class IOStream {
 public:
+  /** End Of File, returned when device operations fails (empty or full) */
+  static const int EOF = -1;
+
   /**
    * Device for in/output of characters or strings.
    */
   class Device {
+  protected:
+    static const uint8_t NON_BLOCKING = 255;
+
+    /** Sleep mode if blocking otherwise NON_BLOCKING */
+    uint8_t m_mode;
+
   public:
+    /**
+     * Default constructor for IOStream devices.
+     * @param[in] mode sleep mode (Default SLEEP_MODE_IDLE)
+     */
+    Device(uint8_t mode = SLEEP_MODE_IDLE) : m_mode(mode) {}
+
+    /**
+     * Set non-blocking mode.
+     */
+    void set_non_blocking()
+    {
+      m_mode = NON_BLOCKING;
+    }
+
+    /**
+     * Set blocking mode with given sleep mode.
+     * @param[in] mode sleep mode.
+     */
+    void set_blocking(uint8_t mode)
+    {
+      m_mode = mode;
+    }
+
     /**
      * @override IOStream::Device
      * Number of bytes available.
@@ -88,7 +118,7 @@ public:
      * @param[in] size number of bytes to write.
      * @return number of bytes written or EOF(-1).
      */
-    virtual int write(void* buf, size_t size);
+    virtual int write(const void* buf, size_t size);
     
     /**
      * @override IOStream::Device
@@ -107,6 +137,15 @@ public:
     
     /**
      * @override IOStream::Device
+     * Peek for the given character in device buffer. Return number 
+     * of characters or EOF(-1).
+     * @param[in] c character to peek for.
+     * @return available or EOF(-1).
+     */
+    virtual int peekchar(char c);
+    
+    /**
+     * @override IOStream::Device
      * Read character from device.
      * @return character or EOF(-1).
      */
@@ -115,10 +154,10 @@ public:
     /**
      * @override IOStream::Device
      * Read string terminated by new-line or until size into given
-     * string buffer.
+     * string buffer. Returns pointer to string or NULL if empty line.
      * @param[in] s string buffer to read into.
      * @param[in] count max number of bytes to read.
-     * @return number of characters read or EOF(-1).
+     * @return string pointer or NULL.
      */
     virtual char* gets(char *s, size_t count);
 
@@ -142,10 +181,9 @@ public:
     /**
      * @override IOStream::Device
      * Flush internal device buffers. Wait for device to become idle.
-     * @param[in] mode sleep mode on flush wait.
      * @return zero(0) or negative error code.
      */
-    virtual int flush(uint8_t mode = SLEEP_MODE_IDLE);
+    virtual int flush();
 
     /**
      * The default implementation of device; null device.
@@ -155,7 +193,7 @@ public:
 
   /**
    * Filter for device (decorator). Default implementation is a 
-   * null filter.
+   * pass through filter.
    */
   class Filter : public Device {
   protected:
@@ -266,10 +304,10 @@ public:
     /**
      * @override IOStream::Device
      * Read string terminated by new-line or until size into given
-     * string buffer.
+     * string buffer. Returns pointer to string or NULL if empty line.
      * @param[in] s string buffer to read into.
      * @param[in] count max number of bytes to read.
-     * @return number of characters read or EOF(-1).
+     * @return string pointer or NULL.
      */
     virtual char* gets(char *s, size_t count)
     {
@@ -302,12 +340,11 @@ public:
     /**
      * @override IOStream::Device
      * Flush internal device buffers. Wait for device to become idle.
-     * @param[in] mode sleep mode on flush wait.
      * @return zero(0) or negative error code.
      */
-    virtual int flush(uint8_t mode = SLEEP_MODE_IDLE)
+    virtual int flush()
     {
-      return (m_dev->flush(mode));
+      return (m_dev->flush());
     }
   };
   
@@ -420,10 +457,9 @@ public:
   }
 
   /**
-   * Print string in program memory to stream.
-   * Use macro PSTR() to generate a string constants in 
-   * program memory.
-   * @param[in] ptr pointer to program memory string.
+   * Print string in program memory to stream. Use macro PSTR() to generate 
+   * a string constants in program memory.
+   * @param[in] s pointer to program memory string.
    */
   void print_P(const char* s) 
   { 
@@ -466,6 +502,15 @@ public:
    */
   void print(IOStream::Device* buffer);
 
+  /**
+   * Scan next token from the input stream. Returns pointer to string
+   * or NULL if not stream is empty. 
+   * @param[in] s string buffer to read into.
+   * @param[in] count max number of bytes to read.
+   * @return string pointer or NULL.
+   */
+  char* scan(char *s, size_t count);
+  
   /**
    * Stream manipulator function prototype. To allow implementation
    * of base change and end of line.

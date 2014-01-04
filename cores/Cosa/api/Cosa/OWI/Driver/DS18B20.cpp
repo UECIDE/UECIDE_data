@@ -30,7 +30,7 @@ DS18B20*
 DS18B20::Search::next()
 { 
   DS18B20* dev = (DS18B20*) OWI::Search::next(); 
-  if (dev == 0) return (0);
+  if (dev == NULL) return (NULL);
   dev->read_scratchpad(false);
   return (dev);
 }
@@ -67,6 +67,7 @@ DS18B20::convert_request(OWI* owi, uint8_t resolution, bool parasite)
   if (!owi->reset()) return (false);
   owi->write(OWI::SKIP_ROM);
   owi->write(CONVERT_T, CHARBITS, parasite);
+  if (resolution == 0) return (true);
   if (resolution < 9) resolution = 9;
   else if (resolution > 12) resolution = 12;
   uint16_t ms = (MAX_CONVERSION_TIME >> (12 - resolution));
@@ -144,7 +145,7 @@ DS18B20::print(IOStream& outs, int16_t temp)
 
 IOStream& operator<<(IOStream& outs, DS18B20& thermometer)
 {
-  if (thermometer.NAME != 0) outs << thermometer.NAME << PSTR(" = ");
+  if (thermometer.NAME != NULL) outs << thermometer.NAME << PSTR(" = ");
   DS18B20::print(outs, thermometer.get_temperature());
   return (outs);
 }

@@ -28,6 +28,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 
 #include	"HardwareSerial_cdcacm.h"
@@ -35,11 +36,22 @@
 
 #define PACKET_SIZE	64
 
+#ifndef CDCACM_MAN 
+#define CDCACM_MAN "www.cpustick.com"
+#endif
+
+#ifndef CDCACM_PROD
+#define CDCACM_PROD "stk500v2"
+#endif
+
+#ifndef CDCACM_SER
+#define CDCACM_SER "BURxxx"
+#endif
+
 // We have allocated 8 PIDs to you from A660 to A667 (hex).
 // The PIDs must be used with VID 0403.
 // We use A660; Cale Fallgatter uses A661; Jim Donelson uses A667;
 // Avrbootloader group (this project) uses A662.
-
 #ifndef CDCACM_VID
 #define CDCACM_VID	0x0403
 #endif
@@ -52,18 +64,6 @@
 #define CDCACM_RID	0x0180
 #endif
 
-#ifndef CDCACM_PRD
-#define CDCACM_PRD "stk500v2"
-#endif
-
-#ifndef CDCACM_MFG
-#define CDCACM_MFG "www.cpustick.com"
-#endif
-
-#ifndef CDCACM_DESC_SIZE
-#define CDCACM_DESC_SIZE 128
-#endif
-
 static const byte cdcacm_device_descriptor[] = {
 	18,					// length
 	0x01,				// device descriptor
@@ -74,7 +74,7 @@ static const byte cdcacm_device_descriptor[] = {
 	CDCACM_RID%0x100, CDCACM_RID/0x100,
 	0x01,				// manufacturer (string)
 	0x02,				// product (string)
-	0x00,				// sn (string)
+	0x03,				// sn (string)
 	0x01				// num configurations
 };
 
@@ -152,7 +152,21 @@ static const byte cdcacm_configuration_descriptor[] = {
 	0x00,		// interval (ms)
 };
 
-static byte cdcacm_string_descriptor[CDCACM_DESC_SIZE];
+//static const byte cdcacm_string_descriptor[] = {
+//	4,			// length
+//	0x03,		// string descriptor
+//	0x09, 0x04,	// english (usa)
+//
+//	34,			// length
+//	0x03,		// string descriptor
+//	'w', 0, 'w', 0, 'w', 0, '.', 0, 'c', 0, 'p', 0, 'u', 0, 's', 0, 't', 0, 'i', 0, 'c', 0, 'k', 0, '.', 0, 'c', 0, 'o', 0, 'm', 0,
+//
+//	18,			// length
+//	0x03,		// string descriptor
+//	'S', 0, 't', 0, 'k', 0, '5', 0, '0', 0, '0', 0, 'v', 0, '2', 0,
+//};
+
+static byte *cdcacm_string_descriptor;
 
 boolean gCdcacm_active;
 
@@ -174,6 +188,52 @@ static volatile byte			gRX_out;
 
 boolean      gConnected = false;
 
+void setStrings(char *man, char *prod, char *ser) {
+    int i;
+    int pos = 0;
+    if (cdcacm_string_descriptor) {
+        free(cdcacm_string_descriptor);
+    }
+    int totlen = 4;
+    totlen += strlen(man) * 2 + 2;
+    totlen += strlen(prod) * 2 + 2;
+    totlen += strlen(ser) * 2 + 2;
+
+    cdcacm_string_descriptor = malloc(totlen);
+
+    // Header
+    cdcacm_string_descriptor[pos++] = 0x04;
+    cdcacm_string_descriptor[pos++] = 0x03;
+    cdcacm_string_descriptor[pos++] = 0x09;
+    cdcacm_string_descriptor[pos++] = 0x04;
+
+    // Manufacturer
+    
+    cdcacm_string_descriptor[pos++] = strlen(man)*2 + 2;
+    cdcacm_string_descriptor[pos++] = 0x03;
+    for (i = 0; i < strlen(man); i++) {
+        cdcacm_string_descriptor[pos++] = man[i];
+        cdcacm_string_descriptor[pos++] = 0;
+    }
+
+    // Product
+    cdcacm_string_descriptor[pos++] = strlen(prod)*2 + 2;
+    cdcacm_string_descriptor[pos++] = 0x03;
+    for (i = 0; i < strlen(prod); i++) {
+        cdcacm_string_descriptor[pos++] = prod[i];
+        cdcacm_string_descriptor[pos++] = 0;
+    }
+
+    // Serial number
+    cdcacm_string_descriptor[pos++] = strlen(ser)*2 + 2;
+    cdcacm_string_descriptor[pos++] = 0x03;
+    for (i = 0; i < strlen(ser); i++) {
+        cdcacm_string_descriptor[pos++] = ser[i];
+        cdcacm_string_descriptor[pos++] = 0;
+    }
+
+	usb_string_descriptor(cdcacm_string_descriptor, totlen);
+}
 
 //*******************************************************************************
 static	int	SPLX(int level)
@@ -469,7 +529,7 @@ static void	cdcacm_reset(void)
 }
 
 //************************************************************************
-static int	check(const byte *descriptor, int length)
+static int __attribute__((unused)) check(const byte *descriptor, int length)
 {
 	int i;
 	int j;
@@ -483,32 +543,6 @@ static int	check(const byte *descriptor, int length)
 	}
 	assert(i == length);
 	return j;
-}
-
-unsigned int cdcacm_construct_descriptor(const char *manufacturer, const char *product, byte *buffer) 
-{
-    int i;
-    int j = 0;
-
-    buffer[j++] = 4;
-    buffer[j++] = 0x03;
-    buffer[j++] = 0x09;
-    buffer[j++] = 0x04;
-
-    buffer[j++] = (strlen(manufacturer)*2) + 2;
-    buffer[j++] = 0x03;
-    for (i = 0; i < strlen(manufacturer); i++) {
-        buffer[j++] = manufacturer[i];
-        buffer[j++] = 0;
-    }
-
-    buffer[j++] = (strlen(product)*2) + 2;
-    buffer[j++] = 0x03;
-    for (i = 0; i < strlen(product); i++) {
-        buffer[j++] = product[i];
-        buffer[j++] = 0;
-    }
-    return j;
 }
 
 //************************************************************************
@@ -535,14 +569,9 @@ void	cdcacm_register(cdcacm_reset_cbfn reset, cdcacm_storedata_cbfn storeData)
 	assert(check(cdcacm_configuration_descriptor, sizeof(cdcacm_configuration_descriptor)) == 10);
 	usb_configuration_descriptor(cdcacm_configuration_descriptor, sizeof(cdcacm_configuration_descriptor));
 
-
-	//assert(check(cdcacm_string_descriptor, sizeof(cdcacm_string_descriptor)) == 3);
-	//usb_string_descriptor(cdcacm_string_descriptor, sizeof(cdcacm_string_descriptor));
-
-    unsigned int desclen = cdcacm_construct_descriptor(CDCACM_MFG, CDCACM_PRD, cdcacm_string_descriptor);
-
-    assert(check(cdcacm_string_descriptor, desclen) == 3);
-	usb_string_descriptor(cdcacm_string_descriptor, desclen);
+	assert(check(cdcacm_string_descriptor, sizeof(cdcacm_string_descriptor)) == 3);
+    setStrings(CDCACM_MAN, CDCACM_PROD, CDCACM_SER);
+//	usb_string_descriptor(cdcacm_string_descriptor, sizeof(cdcacm_string_descriptor));
 }
 
 /*

@@ -1,6 +1,7 @@
 <project name="avr-gcc" default="build">
     <target name="build">
         <antcall target="build-linux"/>
+        <antcall target="build-linux64"/>
         <antcall target="build-windows"/>
         <antcall target="build-macosx"/>
         <antcall target="build-pi"/>
@@ -14,7 +15,20 @@
                 <attribute name="Author" value="Majenko Technologies" />
                 <attribute name="Compiler" value="avr-gcc" />
                 <attribute name="Platform" value="linux" />
-                <attribute name="Arch" value="i386,amd64" />
+                <attribute name="Arch" value="i386" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-linux64">
+        <property file="linux64/avr-gcc/compiler.txt" />
+        <jar basedir="linux64" destfile="avr-gcc-linux64.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="avr-gcc" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="amd64" />
             </manifest>
         </jar>
     </target>

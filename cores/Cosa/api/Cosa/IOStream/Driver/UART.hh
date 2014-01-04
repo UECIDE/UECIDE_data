@@ -43,18 +43,23 @@ extern Soft::UART uart;
 class UART : public IOStream::Device {
   friend void USART_UDRE_vect(void);
   friend void USART_RX_vect(void);
+  friend void USART_TX_vect(void);
 #if defined(__ARDUINO_MIGHTY__)
   friend void USART1_UDRE_vect(void);
   friend void USART1_RX_vect(void);
+  friend void USART1_TX_vect(void);
 #elif defined(__ARDUINO_MEGA__)
   friend void USART1_UDRE_vect(void);
   friend void USART1_RX_vect(void);
+  friend void USART1_TX_vect(void);
   friend void USART2_UDRE_vect(void);
   friend void USART2_RX_vect(void);
+  friend void USART2_TX_vect(void);
   friend void USART3_UDRE_vect(void);
   friend void USART3_RX_vect(void);
+  friend void USART3_TX_vect(void);
 #endif
-private:
+protected:
   volatile uint8_t* const m_sfr;
   IOStream::Device* m_ibuf;
   IOStream::Device* m_obuf;
@@ -105,7 +110,7 @@ private:
   }
 
   /**
-   * Common UART transmit interrupt handler.
+   * Common UART data register empty (transmit) interrupt handler.
    */
   void on_udre_interrupt();
 
@@ -113,6 +118,11 @@ private:
    * Common UART receive interrupt handler.
    */
   void on_rx_interrupt();
+
+  /**
+   * Common UART transmit completed interrupt handler.
+   */
+  void on_tx_interrupt();
 
 public:
   // Default buffer size for standard UART0 (at 9600 baud)
@@ -133,7 +143,7 @@ public:
   } __attribute__((packed));
 
   /**
-   * Construct serial port handler for given UART.
+   * Construct serial port handler for given UART. 
    * @param[in] port number.
    * @param[in] ibuf input stream buffer.
    * @param[in] obuf output stream buffer.
@@ -190,6 +200,17 @@ public:
 
   /**
    * @override IOStream::Device
+   * Peek for given character from serial port input buffer.
+   * @param[in] c character to peek for.
+   * @return available or EOF(-1).
+   */
+  virtual int peekchar(char c)
+  {
+    return (m_ibuf->peekchar(c));
+  }
+    
+  /**
+   * @override IOStream::Device
    * Read character from serial port input buffer.
    * Returns character if successful otherwise on error or buffer empty
    * returns EOF(-1),
@@ -203,12 +224,11 @@ public:
   /**
    * @override IOStream::Device
    * Flush internal device buffers. Wait for device to become idle.
-   * @param[in] mode sleep mode on flush wait.
    * @return zero(0) or negative error code.
    */
-  virtual int flush(uint8_t mode)
+  virtual int flush()
   {
-    return (m_obuf->flush(mode));
+    return (m_obuf->flush());
   }
 
   /**
@@ -224,6 +244,13 @@ public:
    * @return true(1) if successful otherwise false(0)
    */
   bool end();
+
+  /**
+   * @override UART
+   * Transmit completed callback. This virtual member function is
+   * called when the last byte in the output buffer is transmitted.
+   */
+  virtual void on_transmit_completed() {}
 
   /**
    * Serial port references. Only uart0 is predefined (reference to global

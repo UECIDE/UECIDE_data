@@ -1,0 +1,62 @@
+<project name="native" default="build">
+    <target name="build">
+        <antcall target="build-linux"/>
+        <antcall target="build-windows"/>
+        <antcall target="build-macosx"/>
+        <antcall target="build-pi"/>
+    </target>
+    
+    <target name="build-linux">
+        <property file="linux/native/compiler.txt" />
+        <jar basedir="linux" destfile="native-linux.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="native" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="i386,amd64" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-windows">
+        <property file="windows/native/compiler.txt" />
+        <jar basedir="windows" destfile="native-windows.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="native" />
+                <attribute name="Platform" value="windows" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-macosx">
+        <property file="macosx/native/compiler.txt" />
+        <jar basedir="macosx" destfile="native-macosx.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="native" />
+                <attribute name="Platform" value="macosx" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-pi">
+        <property file="pi/native/compiler.txt" />
+        <jar basedir="pi" destfile="native-pi.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="native" />
+                <attribute name="Platform" value="linux" />
+                <attribute name="Arch" value="arm" />
+            </manifest>
+        </jar>
+    </target>
+
+</project>
+

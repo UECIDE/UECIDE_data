@@ -16,6 +16,7 @@
 #define __SD_H__
 
 #include <WProgram.h>
+#include <DSPI.h>
 
 #include <utility/SdFat.h>
 #include <utility/SdFatUtil.h>

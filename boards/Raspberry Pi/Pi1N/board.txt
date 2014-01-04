@@ -1,0 +1,21 @@
+name=Raspberry Pi (R1, Native Pins)
+
+group=Raspberry Pi
+platform=native
+board=_BOARD_PI1_N_
+board.flags=
+ccflags=ffff
+
+upload.using=usb
+upload.maximum_size=524288
+upload.maximum_ram=131072
+upload.speed=115200
+
+build.f_cpu=700000000L
+build.core=RaspberryPi
+build.variant=Pi1AP
+
+family=native
+version=0.1
+core=RaspberryPi
+
