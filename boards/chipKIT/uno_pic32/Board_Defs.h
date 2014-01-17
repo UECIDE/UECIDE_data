@@ -222,8 +222,8 @@ const static uint8_t SCK  = 13;		// PIC32 SCK2
 /*					Pin Mapping Macros							*/
 /* ------------------------------------------------------------ */
 /* This section contains the definitions for pin mapping macros that
-/* are being redefined for this board variant.
-*/
+** are being redefined for this board variant.
+**/
 
 #undef digitalPinToAnalog
 #define	digitalPinToAnalog(P) ( (P) < 12 ? (P) : ((P) >= 14) && ((P) < 26) ? (P)-14 : NOT_ANALOG_PIN )

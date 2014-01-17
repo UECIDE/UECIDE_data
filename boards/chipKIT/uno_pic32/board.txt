@@ -15,5 +15,6 @@ build.f_cpu=80000000L
 build.core=pic32
 build.variant=Uno32
 family=pic32
-version=0.4
+version=0.5
 core=chipKIT
+manual=doc/chipKIT-Uno32-RevC_rm.pdf

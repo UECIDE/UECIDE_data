@@ -60,6 +60,7 @@ uint8_t Sd2Card::spiRec(void) {
     } else {
         // output pin high - like sending 0XFF
         digitalWrite(_mosi, HIGH);
+        digitalWrite(_miso, HIGH);
         data = shiftIn(_miso, _clk, MSBFIRST);
     }
     return data;
@@ -70,6 +71,7 @@ void Sd2Card::spiSend(uint8_t data) {
     if (_spi) {
         _spi->transfer(data);
     } else {
+        digitalWrite(_miso, HIGH);
         shiftOut(_mosi, _clk, MSBFIRST, data);
     }
 }

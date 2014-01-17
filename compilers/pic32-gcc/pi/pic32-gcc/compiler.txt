@@ -1,8 +1,8 @@
 name=pic32-gcc
-version=4.5.1e
+version=4.5.1g
 
 optimize=-O2
-warnings=
+warnings=-w
 extra.flags=
 
 cflags=-g::${optimize}::${warnings}::-ffunction-sections::-fdata-sections::-mno-smart-io::-mdebugger::-Wcast-align::-fno-short-double::${extra.flags}
@@ -24,7 +24,7 @@ compile.ar=${ar}::rcs::${library}::${object.name}
 compile.eep=${objcopy}::-O::ihex::-j::.eeprom::--set-section-flags=.eeprom=alloc,load::--no-change-warnings::--change-section-lma::.eeprom=0::${build.path}/${filename}.elf::${build.path}/${filename}.eep
 compile.hex=${binhex}::-a::${build.path}/${filename}.elf
 compile.lss=${objdump}::-h::-S::${build.path}/${filename}.elf
-compile.link=${gcc}::${ldflags}::-mprocessor=${build.mcu}::-o::${build.path}/${filename}.elf::${object.filelist}::-L${build.path}::-L${libraries.path}::-Wl,--start-group::${libraries}::-Wl,--end-group::-lm
+compile.link=${gcc}::${ldflags}::-mprocessor=${build.mcu}::-o::${build.path}/${filename}.elf::${object.filelist}::-L${build.path}::-L${libraries.path}::-Wl,--start-group::${libraries}::-Wl,--end-group::-lm::${extra.libs}
 compile.size=${size}::${build.path}/${filename}.elf
 
 compiler.error=^([^:]+):(\\d+):\\d+: error: (.*)

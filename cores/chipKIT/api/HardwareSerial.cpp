@@ -1013,3 +1013,15 @@ HardwareSerial Serial7((p32_uart *)_SER7_BASE, _SER7_IRQ, _SER7_VECTOR, _SER7_IP
 /* ------------------------------------------------------------ */
 
 /************************************************************************/
+
+/*
+ * Default stdout handler to direct output through the primary Serial device.
+ * This function is weak, so it can be overridden by the end user with their
+ * own function if they really need to.
+ */
+
+extern "C" {
+    void __attribute__((weak,used)) _mon_putc(char c) {
+        Serial.write(c);
+    }
+}

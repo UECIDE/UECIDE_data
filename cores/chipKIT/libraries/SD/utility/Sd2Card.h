@@ -160,6 +160,8 @@ class Sd2Card {
         Sd2Card(uint8_t cs) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0), _spi(new DSPI0), _cs(cs) {}
         Sd2Card(DSPI *spi) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0), _spi(spi), _cs(10) {}
         Sd2Card(DSPI *spi, uint8_t cs) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0), _spi(spi), _cs(cs) {}
+        Sd2Card(uint8_t mosi, uint8_t miso, uint8_t clk) : _mosi(mosi), _miso(miso), _clk(clk), _cs(10), _spi(NULL) {}
+        Sd2Card(uint8_t mosi, uint8_t miso, uint8_t clk, uint8_t cs) : _mosi(mosi), _miso(miso), _clk(clk), _cs(cs), _spi(NULL) {}
 
         DSPI *_spi;
         uint8_t _mosi;
