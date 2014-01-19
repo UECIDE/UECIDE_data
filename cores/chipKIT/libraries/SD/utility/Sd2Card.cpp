@@ -270,7 +270,8 @@ uint8_t Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
     chipSelectHigh();
 
     if (_spi) {
-	_spi->setSpeed(10000000UL);
+//	_spi->setSpeed(10000000UL);
+	_spi->setSpeed(20000000UL);
     } else {
    	 setSckRate(sckRateID);
     }
@@ -324,7 +325,6 @@ uint8_t Sd2Card::readBlock(uint32_t block, uint8_t* dst) {
  */
 uint8_t Sd2Card::readData(uint32_t block,
         uint16_t offset, uint16_t count, uint8_t* dst) {
-  uint16_t n;
   if (count == 0) return true;
   if ((count + offset) > 512) {
     goto fail;
@@ -351,8 +351,12 @@ uint8_t Sd2Card::readData(uint32_t block,
     spiRec();
   }
   // transfer data
-  for (uint16_t i = 0; i < count; i++) {
-    dst[i] = spiRec();
+  if (_spi != NULL) {
+    _spi->transfer(count, 0xFF, dst);
+  } else {
+      for (uint16_t i = 0; i < count; i++) {
+        dst[i] = spiRec();
+      }
   }
 
   offset_ += count;
@@ -360,6 +364,7 @@ uint8_t Sd2Card::readData(uint32_t block,
     // read rest of data, checksum and set chip select high
     readEnd();
   }
+
 
   return true;
 
@@ -372,7 +377,9 @@ uint8_t Sd2Card::readData(uint32_t block,
 void Sd2Card::readEnd(void) {
   if (inBlock_) {
       // skip data and crc
-    while (offset_++ < 514) spiRec();
+    while (offset_++ < 514) {
+        spiRec();
+    }
     chipSelectHigh();
     inBlock_ = 0;
   }
@@ -514,21 +521,25 @@ uint8_t Sd2Card::writeData(const uint8_t* src) {
 // send one block of data for write block or write multiple blocks
 uint8_t Sd2Card::writeData(uint8_t token, const uint8_t* src) {
 
-  spiSend(token);
-  for (uint16_t i = 0; i < 512; i++) {
-    spiSend(src[i]);
-  }
+    spiSend(token);
+    if (_spi != NULL) {
+        _spi->transfer(512, (uint8_t *)src);
+    } else {
+        for (uint16_t i = 0; i < 512; i++) {
+            spiSend(src[i]);
+        }
+    }
 
-  spiSend(0xff);  // dummy crc
-  spiSend(0xff);  // dummy crc
+    spiSend(0xff);  // dummy crc
+    spiSend(0xff);  // dummy crc
 
-  status_ = spiRec();
-  if ((status_ & DATA_RES_MASK) != DATA_RES_ACCEPTED) {
-    error(SD_CARD_ERROR_WRITE);
-    chipSelectHigh();
-    return false;
-  }
-  return true;
+    status_ = spiRec();
+    if ((status_ & DATA_RES_MASK) != DATA_RES_ACCEPTED) {
+        error(SD_CARD_ERROR_WRITE);
+        chipSelectHigh();
+        return false;
+    }
+    return true;
 }
 //------------------------------------------------------------------------------
 /** Start a write multiple blocks sequence.

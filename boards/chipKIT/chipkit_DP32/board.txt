@@ -14,5 +14,6 @@ build.f_cpu=40000000L
 build.core=pic32
 build.variant=DP32
 family=pic32
-version=0.4
+version=0.5
 core=chipKIT
+manual=doc/chipKIT_DP32_rm.pdf

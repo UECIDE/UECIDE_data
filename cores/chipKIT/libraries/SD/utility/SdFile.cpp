@@ -257,7 +257,7 @@ uint8_t SdFile::make83Name(const char* str, uint8_t* name) {
       i = 8;   // place for extension
     } else {
       // illegal FAT characters
-      char* p = "|<>^+=?/[];,*\"\\";
+      char* p = (char *)"|<>^+=?/[];,*\"\\";
       uint8_t b;
       while ((b = pgm_read_byte(p++))) if (b == c) return false;
       // check size and only allow ASCII printable characters
@@ -725,7 +725,9 @@ int16_t SdFile::read(void* buf, uint16_t nbyte) {
       dst += n;
     } else {
       // read block to cache and copy data to caller
-      if (!SdVolume::cacheRawBlock(block, SdVolume::CACHE_FOR_READ)) return -1;
+      if (!SdVolume::cacheRawBlock(block, SdVolume::CACHE_FOR_READ)) {
+            return -1;
+        }
       uint8_t* src = SdVolume::cacheBuffer_.data + offset;
       uint8_t* end = src + n;
       while (src != end) *dst++ = *src++;

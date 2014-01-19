@@ -156,18 +156,12 @@ uint8_t const SD_CARD_TYPE_SDHC = 3;
 class Sd2Card {
     public:
         /** Construct an instance of Sd2Card. */
-        Sd2Card(void) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0), _spi(new DSPI0), _cs(10) {}
-        Sd2Card(uint8_t cs) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0), _spi(new DSPI0), _cs(cs) {}
-        Sd2Card(DSPI *spi) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0), _spi(spi), _cs(10) {}
-        Sd2Card(DSPI *spi, uint8_t cs) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0), _spi(spi), _cs(cs) {}
+        Sd2Card(void) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0), _cs(10), _spi(new DSPI0) {}
+        Sd2Card(uint8_t cs) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0), _cs(cs), _spi(new DSPI0) {}
+        Sd2Card(DSPI *spi) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0), _cs(10), _spi(spi) {}
+        Sd2Card(DSPI *spi, uint8_t cs) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0), _cs(cs), _spi(spi) {}
         Sd2Card(uint8_t mosi, uint8_t miso, uint8_t clk) : _mosi(mosi), _miso(miso), _clk(clk), _cs(10), _spi(NULL) {}
         Sd2Card(uint8_t mosi, uint8_t miso, uint8_t clk, uint8_t cs) : _mosi(mosi), _miso(miso), _clk(clk), _cs(cs), _spi(NULL) {}
-
-        DSPI *_spi;
-        uint8_t _mosi;
-        uint8_t _miso;
-        uint8_t _clk;
-        uint8_t _cs;
 
         uint32_t cardSize(void);
         uint8_t erase(uint32_t firstBlock, uint32_t lastBlock);
@@ -230,6 +224,13 @@ class Sd2Card {
         uint8_t partialBlockRead_;
         uint8_t status_;
         uint8_t type_;
+
+        uint8_t _mosi;
+        uint8_t _miso;
+        uint8_t _clk;
+        uint8_t _cs;
+        DSPI *_spi;
+
         // private functions
         uint8_t cardAcmd(uint8_t cmd, uint32_t arg) {
             cardCommand(CMD55, 0);

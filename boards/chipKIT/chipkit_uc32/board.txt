@@ -13,5 +13,6 @@ build.f_cpu=80000000L
 build.core=pic32
 build.variant=uC32
 family=pic32
-version=0.3
+version=0.4
 core=chipKIT
+manual=doc/chipKIT uC32_rm.pdf

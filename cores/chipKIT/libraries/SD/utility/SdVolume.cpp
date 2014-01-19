@@ -116,7 +116,9 @@ uint8_t SdVolume::cacheFlush(void) {
 uint8_t SdVolume::cacheRawBlock(uint32_t blockNumber, uint8_t action) {
   if (cacheBlockNumber_ != blockNumber) {
     if (!cacheFlush()) return false;
-    if (!sdCard_->readBlock(blockNumber, cacheBuffer_.data)) return false;
+    if (!sdCard_->readBlock(blockNumber, cacheBuffer_.data)) {
+        return false;
+    }
     cacheBlockNumber_ = blockNumber;
   }
   cacheDirty_ |= action;

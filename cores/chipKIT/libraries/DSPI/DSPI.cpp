@@ -534,13 +534,41 @@ DSPI::transfer(uint32_t bVal) {
 **		from the slave device.
 */
 
+
 void
 DSPI::transfer(uint16_t cbReq, uint8_t * pbSnd, uint8_t * pbRcv) {
-	
+
+// If we have one ENHBUF we have all ENHBUF, and all the registers
+// are the same.  We'll just use SPI1A's macros for all the ports
+// as it makes no difference.
+
+#ifdef _SPI1ACON_ENHBUF_POSITION
+    pspi->sxCon.set = 1<<_SPI1ACON_ENHBUF_POSITION;
+    uint16_t toWrite = cbReq;
+    uint16_t toRead = cbReq;
+    uint16_t rPos = 0;
+    uint16_t wPos = 0;
+
+    while (toWrite > 0 || toRead > 0) {
+        if (toWrite > 0) {
+            if ((pspi->sxStat.reg & (1<<_SPI1ASTAT_SPITBF_POSITION)) == 0) {
+                pspi->sxBuf.reg = pbSnd[wPos++];
+                toWrite--;
+            }
+        }
+        if (toRead > 0) {
+            if ((pspi->sxStat.reg & (1<<_SPI1ASTAT_SPIRBE_POSITION)) == 0) {
+                pbRcv[rPos++] = pspi->sxBuf.reg;
+                toRead--;
+            }
+        }
+    }
+    pspi->sxCon.clr = 1<<_SPI1ACON_ENHBUF_POSITION;
+#else 
 	for (cbCur = cbReq; cbCur > 0; cbCur--) {
 		*pbRcv++ = transfer(*pbSnd++);
 	}
-
+#endif
 }
 
 /* ------------------------------------------------------------ */
@@ -564,11 +592,33 @@ DSPI::transfer(uint16_t cbReq, uint8_t * pbSnd, uint8_t * pbRcv) {
 
 void
 DSPI::transfer(uint16_t cbReq, uint8_t * pbSnd) {
+#ifdef _SPI1ACON_ENHBUF_POSITION
+    pspi->sxCon.set = 1<<_SPI1ACON_ENHBUF_POSITION;
+    uint16_t toWrite = cbReq;
+    uint16_t toRead = cbReq;
+    uint16_t wPos = 0;
+
+    while (toWrite > 0 || toRead > 0) {
+        if (toWrite > 0) {
+            if ((pspi->sxStat.reg & (1<<_SPI1ASTAT_SPITBF_POSITION)) == 0) {
+                pspi->sxBuf.reg = pbSnd[wPos++];
+                toWrite--;
+            }
+        }
+        if (toRead > 0) {
+            if ((pspi->sxStat.reg & (1<<_SPI1ASTAT_SPIRBE_POSITION)) == 0) {
+                (void) pspi->sxBuf.reg;
+                toRead--;
+            }
+        }
+    }
+    pspi->sxCon.clr = 1<<_SPI1ACON_ENHBUF_POSITION;
+#else
 
 	for (cbCur = cbReq; cbCur > 0; cbCur--) {
 		transfer(*pbSnd++);
 	}
-
+#endif
 }
 
 /* ------------------------------------------------------------ */
@@ -593,11 +643,33 @@ DSPI::transfer(uint16_t cbReq, uint8_t * pbSnd) {
 
 void
 DSPI::transfer(uint16_t cbReq, uint8_t bPad, uint8_t * pbRcv) {
+#ifdef _SPI1ACON_ENHBUF_POSITION
+    pspi->sxCon.set = 1<<_SPI1ACON_ENHBUF_POSITION;
+    uint16_t toWrite = cbReq;
+    uint16_t toRead = cbReq;
+    uint16_t rPos = 0;
+
+    while (toWrite > 0 || toRead > 0) {
+        if (toWrite > 0) {
+            if ((pspi->sxStat.reg & (1<<_SPI1ASTAT_SPITBF_POSITION)) == 0) {
+                pspi->sxBuf.reg = bPad;
+                toWrite--;
+            }
+        }
+        if (toRead > 0) {
+            if ((pspi->sxStat.reg & (1<<_SPI1ASTAT_SPIRBE_POSITION)) == 0) {
+                pbRcv[rPos++] = pspi->sxBuf.reg;
+                toRead--;
+            }
+        }
+    }
+    pspi->sxCon.clr = 1<<_SPI1ACON_ENHBUF_POSITION;
+#else
 
 	for (cbCur = cbReq; cbCur > 0; cbCur--) {
 		*pbRcv++ = transfer(bPad);
 	}
-
+#endif
 }
 
 /* ------------------------------------------------------------ */

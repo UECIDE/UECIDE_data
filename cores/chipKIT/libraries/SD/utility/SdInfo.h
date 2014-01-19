@@ -107,7 +107,7 @@ typedef struct CID {
   // byte 15
   unsigned always1 : 1;
   unsigned crc : 7;
-}cid_t;
+} cid_t;
 //------------------------------------------------------------------------------
 // CSD for version 1.00 cards
 typedef struct CSDV1 {
@@ -168,7 +168,7 @@ typedef struct CSDV1 {
   // byte 15
   unsigned always1 : 1;
   unsigned crc : 7;
-}csd1_t;
+} csd1_t;
 //------------------------------------------------------------------------------
 // CSD for version 2.00 cards
 typedef struct CSDV2 {
@@ -225,7 +225,7 @@ typedef struct CSDV2 {
   // byte 15
   unsigned always1 : 1;
   unsigned crc : 7;
-}csd2_t;
+} csd2_t;
 
 #pragma pack(pop)
 
