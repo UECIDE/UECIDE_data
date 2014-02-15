@@ -1,31 +1,63 @@
 <project name="avr-gcc" default="build">
     <target name="build">
-        <antcall target="build-linux"/>
-        <antcall target="build-pi"/>
+        <antcall target="build-linux32"/>
+        <antcall target="build-linux64"/>
+        <antcall target="build-windows"/>
+        <antcall target="build-macosx"/>
     </target>
-    
-    <target name="build-linux">
-        <jar basedir="linux" destfile="avr-gcc-481-linux.jar">
+
+    <target name="build-linux32">
+        <property file="linux32/avr-gcc-481/compiler.txt" />
+        <jar basedir="linux32" destfile="avr-gcc-481-linux32.jar">
             <manifest>
-                <attribute name="Version" value="4.8.1b" />
+                <attribute name="Version" value="${version}" />
                 <attribute name="Author" value="Majenko Technologies" />
                 <attribute name="Compiler" value="avr-gcc-481" />
                 <attribute name="Platform" value="linux" />
-                <attribute name="Arch" value="i386,amd64" />
+                <attribute name="Arch" value="i386" />
             </manifest>
         </jar>
     </target>
 
-    <target name="build-pi">
-        <jar basedir="pi" destfile="avr-gcc-481-pi.jar">
+    <target name="build-linux64">
+        <property file="linux64/avr-gcc-481/compiler.txt" />
+        <jar basedir="linux64" destfile="avr-gcc-481-linux64.jar">
             <manifest>
-                <attribute name="Version" value="4.8.1a" />
+                <attribute name="Version" value="${version}" />
                 <attribute name="Author" value="Majenko Technologies" />
                 <attribute name="Compiler" value="avr-gcc-481" />
                 <attribute name="Platform" value="linux" />
-                <attribute name="Arch" value="arm" />
+                <attribute name="Arch" value="amd64" />
             </manifest>
         </jar>
     </target>
+
+    <target name="build-windows">
+        <property file="windows/avr-gcc-481/compiler.txt" />
+        <jar basedir="windows" destfile="avr-gcc-481-windows.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="avr-gcc-481" />
+                <attribute name="Platform" value="windows" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-macosx">
+        <property file="macosx/avr-gcc-481/compiler.txt" />
+        <jar basedir="macosx" destfile="avr-gcc-481-macosx.jar">
+            <manifest>
+                <attribute name="Version" value="${version}" />
+                <attribute name="Author" value="Majenko Technologies" />
+                <attribute name="Compiler" value="avr-gcc-481" />
+                <attribute name="Platform" value="macosx" />
+                <attribute name="Arch" value="any" />
+            </manifest>
+        </jar>
+    </target>
+
+    
 </project>
 

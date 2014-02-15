@@ -27,6 +27,8 @@ compile.lss=${objdump}::-h::-S::${build.path}/${filename}.elf
 compile.link=${gcc}::${ldflags}::${core.ldflags}::${board.ldflags}::${option.flags}::${option.ldflags}::-mprocessor=${build.mcu}::-o::${build.path}/${filename}.elf::${object.filelist}::-L${build.path}::-L${libraries.path}::-Wl,--start-group::${libraries}::-Wl,--end-group::-lm::${extra.libs}
 compile.size=${size}::${build.path}/${filename}.elf
 
+compile.bin=${objcopy}::--input::binary::--output-target::elf32-tradlittlemips::--binary-architecture::mips::--rename-section::.data=.text,alloc,load,readonly,code,share,contents::${source.name}::${object.name}
+
 compiler.error=^([^:]+):(\\d+):\\d+: error: (.*)
 compiler.warning=^([^:]+):(\\d+): Warning: (.*)
 
